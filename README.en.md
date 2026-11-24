@@ -27,7 +27,7 @@ Storybook coloured-pencil stickers: cream gingham, lemons, daisies, bees and a h
 </td>
 <td align="center" width="25%">
 <picture><source media="(prefers-color-scheme: dark)" srcset="assets/lemon-bear/state-sleep-dark.svg"><img src="assets/lemon-bear/state-sleep-light.svg" alt="The bear naps, zzz rising" width="100%"></picture>
-<br><b>Nap</b><br><sub>after 10 quiet minutes, zzz</sub>
+<br><b>Nap</b><br><sub>after 10 quiet minutes, zzz; click the margins to wake it</sub>
 </td>
 <td align="center" width="25%">
 <picture><source media="(prefers-color-scheme: dark)" srcset="assets/lemon-bear/state-hearts-dark.svg"><img src="assets/lemon-bear/state-hearts-light.svg" alt="Click the bear for hearts" width="100%"></picture>

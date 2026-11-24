@@ -322,7 +322,9 @@ export const register: Register = on => {
 
   // A click on the bare backdrop: work out what it landed on and play that part once.
   on('ui.pointer', async ($, e, next) => {
-    const what = hit(e.x, e.y)
+    // A sleeping bear lies low, level with the prompt box, and clicks there never reach the
+    // backdrop; so while it sleeps, a click anywhere on the margins wakes it.
+    const what = (await read($, isAsleep)) ? 'bear' : hit(e.x, e.y)
     {
       await play($, what, what === 'pop' ? e.x : undefined, what === 'pop' ? e.y : undefined)
       if (what === 'bear') {

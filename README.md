@@ -27,7 +27,7 @@
 </td>
 <td align="center" width="25%">
 <picture><source media="(prefers-color-scheme: dark)" srcset="assets/lemon-bear/state-sleep-dark.svg"><img src="assets/lemon-bear/state-sleep-light.svg" alt="小熊趴着睡觉冒 zzz" width="100%"></picture>
-<br><b>打盹</b><br><sub>10 分钟没动静就睡，冒 zzz</sub>
+<br><b>打盹</b><br><sub>10 分钟没动静就睡，冒 zzz；点空白处叫醒</sub>
 </td>
 <td align="center" width="25%">
 <picture><source media="(prefers-color-scheme: dark)" srcset="assets/lemon-bear/state-hearts-dark.svg"><img src="assets/lemon-bear/state-hearts-light.svg" alt="点小熊冒爱心" width="100%"></picture>

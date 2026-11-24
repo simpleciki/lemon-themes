@@ -1,6 +1,6 @@
 {
   "name": "lemon-bear",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "Lemon & honey-bear theme for the desktop app, with a usage band and pane (model, context, tokens, subagents, estimated cost).",
   "types": "./types/index.d.ts"
 }

@@ -39,6 +39,8 @@ Each line is something we tried, saw fail in the app, and fixed. Check them agai
 
 - `ui.pointer` hears only clicks on the **bare** backdrop: the side margins. A click where the
   conversation lies over the art never arrives. Put clickable things in the margins.
+- The prompt box's strip runs the full width at the bottom. Art that sits that low (our bear lying
+  down to sleep) cannot be clicked: let a click anywhere on the margins reach it in that state.
 - A click gives a position (0-1 each way), not an element; work out what was hit from the position,
   then redraw that part once (a fresh comment in the SVG makes one-shot animations play again).
 

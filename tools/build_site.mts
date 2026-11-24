@@ -244,7 +244,7 @@ const BANDS = { 'light-zh': uri(band(LIGHT)), 'dark-zh': uri(band(DARK)), 'light
 const TEXT: Record<string, [string, string]> = {
   title: ['Lemon Themes · 柠檬小熊试穿', 'Lemon Themes · lemon-bear try-on'],
   h1: ['Lemon Themes · 柠檬小熊', 'Lemon Themes · lemon-bear'],
-  hint: ['点小熊、点两边空白处，或者按右边的按钮。', 'Click the bear, click the margins, or use the buttons.'],
+  hint: ['点小熊、点两边空白处，或者按右边的按钮。小熊睡着时点哪里都能叫醒它。', 'Click the bear, click the margins, or use the buttons. A click anywhere wakes the sleeping bear.'],
   nap: ['打个盹', 'Nap'],
   party: ['撒花', 'Celebrate'],
   dark: ['深色', 'Dark'],
@@ -374,7 +374,8 @@ show('sit');
 win.addEventListener('click', e => {
   if (e.target.closest('.chat, .dock, .side')) return;
   const r = win.getBoundingClientRect(), x = (e.clientX - r.left) / r.width, y = (e.clientY - r.top) / r.height;
-  if (x > 0.84 && y > 0.5) { asleep = false; napBtn(); show('bear', 3600); return; }
+  // as in the app: while the bear sleeps, a click anywhere on the margins wakes it
+  if (asleep || (x > 0.84 && y > 0.5)) { asleep = false; napBtn(); show('bear', 3600); return; }
   const img = document.createElement('img');
   img.src = STICKERS[pops++ % STICKERS.length]; img.className = 'pop';
   img.style.left = (e.clientX - r.left) + 'px'; img.style.top = (e.clientY - r.top) + 'px';
