@@ -1,0 +1,12 @@
+{
+  "name": "lemon-themes",
+  "owner": { "name": "Ciki" },
+  "description": "Storybook sticker themes for the Claude desktop app.",
+  "plugins": [
+    {
+      "name": "lemon-bear",
+      "source": "./plugins/lemon-bear",
+      "description": "Lemon & honey-bear theme: floating stickers, an animated bear, a usage band and pane."
+    }
+  ]
+}

@@ -1,0 +1,5 @@
+# raw generation records hold local paths and account details; PROMPTS.md is the public copy
+*.gen.json
+.DS_Store
+__pycache__/
+*.tmp-write

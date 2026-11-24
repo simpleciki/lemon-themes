@@ -1,0 +1,3 @@
+plugins/*/hooks/make-colors.js and make-colors.d.ts are copied unchanged from the plugin-authoring
+kit that ships with Claude Code, which tells mod authors to copy them into their mods. They are
+Anthropic's, not covered by this repository's MIT license.
