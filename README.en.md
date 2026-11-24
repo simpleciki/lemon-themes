@@ -1,23 +1,64 @@
-# Lemon Themes
+<div align="center">
 
-[中文](README.md)
+<a href="https://simpleciki.github.io/lemon-themes/">
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/lemon-bear/hero-dark.svg">
+  <img src="assets/lemon-bear/hero-light.svg" alt="Lemon Themes: a bear in a yellow beret sits on gingham, with lemons, daisies and bees floating around" width="100%">
+</picture>
+</a>
 
-Hand-drawn skins for the Claude desktop app: stickers floating in the margins, a little mascot in
-the corner that blinks and dozes, and a usage band you can read at a glance.
+**Animated, hand-drawn skins for the Claude desktop app**
 
-> Screenshots to come
+[**🍋 Try it on**](https://simpleciki.github.io/lemon-themes/) · [中文](README.md) · [Make a theme](skills/make-theme/SKILL.md) · MIT
 
-## Themes
+</div>
 
-| Theme | Look | What it does |
-|---|---|---|
-| **lemon-bear** | storybook coloured-pencil stickers: cream gingham, lemons, daisies, bees and a honey bear in a yellow beret | the bear sits and blinks, sways a little, naps after 10 quiet minutes (zzz); click it for a hop and hearts; it throws stickers when you praise it, a commit lands or the tests pass |
+<br>
 
-## The usage band
+## lemon-bear
 
-Model, thinking effort, context used (a glass of lemonade, filled to the level), tokens this
-session, subagent runs, the equivalent cost at API prices (an estimate, not a bill), and the
-5-hour and weekly limits with their reset times. `/lemon` opens the full pane.
+Storybook coloured-pencil stickers: cream gingham, lemons, daisies, bees and a honey bear in a yellow beret. Every picture below moves, as it does in the app.
+
+<table>
+<tr>
+<td align="center" width="25%">
+<picture><source media="(prefers-color-scheme: dark)" srcset="assets/lemon-bear/state-sit-dark.svg"><img src="assets/lemon-bear/state-sit-light.svg" alt="The bear sits and blinks" width="100%"></picture>
+<br><b>Sit</b><br><sub>blinks, sways a little</sub>
+</td>
+<td align="center" width="25%">
+<picture><source media="(prefers-color-scheme: dark)" srcset="assets/lemon-bear/state-sleep-dark.svg"><img src="assets/lemon-bear/state-sleep-light.svg" alt="The bear naps, zzz rising" width="100%"></picture>
+<br><b>Nap</b><br><sub>after 10 quiet minutes, zzz</sub>
+</td>
+<td align="center" width="25%">
+<picture><source media="(prefers-color-scheme: dark)" srcset="assets/lemon-bear/state-hearts-dark.svg"><img src="assets/lemon-bear/state-hearts-light.svg" alt="Click the bear for hearts" width="100%"></picture>
+<br><b>Click it</b><br><sub>a hop and hearts</sub>
+</td>
+<td align="center" width="25%">
+<picture><source media="(prefers-color-scheme: dark)" srcset="assets/lemon-bear/state-party-dark.svg"><img src="assets/lemon-bear/state-party-light.svg" alt="Confetti" width="100%"></picture>
+<br><b>Confetti</b><br><sub>praise, a commit, passing tests</sub>
+</td>
+</tr>
+</table>
+
+### The usage band
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/lemon-bear/band-dark.svg">
+  <img src="assets/lemon-bear/band-light.svg" alt="Usage band: model, effort, context, tokens, subagents, equivalent cost, 5-hour and weekly limits" width="100%">
+</picture>
+
+Model, thinking effort, context used (a glass of lemonade, filled to the level), tokens this session, subagent runs, the equivalent cost at API prices (an estimate, not a bill), and the 5-hour and weekly limits with their reset times. `/lemon` opens the full pane.
+
+### Little things
+
+| | |
+|---|---|
+| 🍋 **Margin stickers** | lemons, daisies and bees drift along the sidebar and the right edge, clear of the conversation |
+| 👆 **Click the margins** | a sticker pops where you click |
+| 💬 **Message stickers** | each message gets a small sticker, picked from what it says |
+| 🌙 **Dark mode** | follows the system: the gingham dims, the stickers stay |
+
+See it before installing: the [**try-on page**](https://simpleciki.github.io/lemon-themes/) rebuilds the app in the browser. Click the bear, click the margins, switch to nap or dark.
 
 ## Install
 
@@ -44,13 +85,12 @@ New sessions then wear the theme. The backdrop shows in the desktop and mobile a
 See [skills/make-theme/SKILL.md](skills/make-theme/SKILL.md), after [docs/LESSONS.md](docs/LESSONS.md):
 what the app will and will not play.
 
-## Layout
-
 | Path | What |
 |---|---|
 | `plugins/<theme>/` | the plugin |
 | `art-src/<theme>/` | source drawings, the prompt behind each, and `theme-build.json` |
 | `tools/build_theme.py` | cuts the drawings apart and traces them into the plugin's vector data |
+| `tools/build_site.mts` | builds the animated pictures on this page and the try-on page `docs/index.html` |
 | `docs/LESSONS.md` | what we learned the hard way |
 
 ## License
