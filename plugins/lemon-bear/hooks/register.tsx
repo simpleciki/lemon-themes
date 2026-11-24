@@ -321,6 +321,8 @@ export const register: Register = on => {
     {
       await play($, what, what === 'pop' ? e.x : undefined, what === 'pop' ? e.y : undefined)
       if (what === 'bear') {
+        // waking the bear counts as activity, or the nap timer puts it straight back to sleep
+        lastActive = await $.clock.now()
         await update($, isAsleep, () => false)
       }
     }
