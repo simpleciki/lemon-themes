@@ -291,6 +291,11 @@ export const register: Register = on => {
 
       return { text: '小熊撒花中～' }
     }
+    if (/nap|sleep|睡|盹/.test(e.args ?? '')) {
+      await update($, isAsleep, () => true)
+
+      return { text: '小熊趴下睡了，点它一下就会醒。' }
+    }
     await refresh($)
     await update($, isBandHidden, () => false)
     await $.ui.open({ id: PANE, title: '小熊用量' })

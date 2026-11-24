@@ -43,11 +43,11 @@ Storybook coloured-pencil stickers: cream gingham, lemons, daisies, bees and a h
 ### The usage band
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="assets/lemon-bear/band-dark.svg">
-  <img src="assets/lemon-bear/band-light.svg" alt="Usage band: model, effort, context, tokens, subagents, equivalent cost, 5-hour and weekly limits" width="100%">
+  <source media="(prefers-color-scheme: dark)" srcset="assets/lemon-bear/band-en-dark.svg">
+  <img src="assets/lemon-bear/band-en-light.svg" alt="Usage band: model, effort, context, tokens, subagents, equivalent cost, 5-hour and weekly limits" width="100%">
 </picture>
 
-Model, thinking effort, context used (a glass of lemonade, filled to the level), tokens this session, subagent runs, the equivalent cost at API prices (an estimate, not a bill), and the 5-hour and weekly limits with their reset times. `/lemon` opens the full pane.
+Model, thinking effort, context used (a glass of lemonade, filled to the level), tokens this session, subagent runs, the equivalent cost at API prices (an estimate, not a bill), and the 5-hour and weekly limits with their reset times. `/lemon` opens the full pane; `/lemon nap` puts the bear to sleep.
 
 ### Little things
 

@@ -179,12 +179,13 @@ function cards(p: Pal) {
 }
 
 // ---------- the usage band ----------
-function band(p: Pal) {
+function band(p: Pal, en = false) {
   const icon = (src: string, x: number, size = 30) =>
     src.replace('<svg ', `<svg x="${x}" y="${(64 - size) / 2}" width="${size}" height="${size}" `)
   const items: [string, string, number][] = [
-    [ICONS.bear, 'Opus 5.5', 34], [ICONS.think, '思考 中', 26], [juiceGlass(42), '上下文 42%', 32], [ICONS.honey, '1.2M tok', 30],
-    [ICONS.bee, '子 agent 3 次', 32], [ICONS.coin, '≈ $4.20', 28], [limitRing(27), '5 小时 27% · 11:00 重置', 28], [limitRing(61), '每周 61% · 周三 15:00 重置', 28],
+    [ICONS.bear, 'Opus 5.5', 34], [ICONS.think, en ? 'Effort med' : '思考 中', 26], [juiceGlass(42), en ? 'Context 42%' : '上下文 42%', 32], [ICONS.honey, '1.2M tok', 30],
+    [ICONS.bee, en ? '3 subagents' : '子 agent 3 次', 32], [ICONS.coin, '≈ $4.20', 28],
+    [limitRing(27), en ? '5h 27% · resets 11:00' : '5 小时 27% · 11:00 重置', 28], [limitRing(61), en ? 'Week 61% · resets Wed 15:00' : '每周 61% · 周三 15:00 重置', 28],
   ]
   let x = 26
   let body = ''
@@ -222,6 +223,7 @@ for (const [mode, p, dark] of [['light', LIGHT, false], ['dark', DARK, true]] as
   write(`hero-${mode}.svg`, hero(p, dark))
   for (const [k, v] of Object.entries(cards(p))) write(`state-${k}-${mode}.svg`, v)
   write(`band-${mode}.svg`, band(p))
+  write(`band-en-${mode}.svg`, band(p, true))
 }
 
 // ---------- docs/index.html: the try-on page ----------
@@ -236,8 +238,30 @@ const scenes = {
 }
 const stickerUrls = ['lemon', 'slice', 'daisy', 'heart', 'bee'].map(k => 'data:image/svg+xml;utf8,' + encodeURIComponent(STICKERS[k]))
 const sticker = (k: string) => 'data:image/svg+xml;utf8,' + encodeURIComponent(STICKERS[k])
-const bandLight = 'data:image/svg+xml;utf8,' + encodeURIComponent(band(LIGHT))
-const bandDark = 'data:image/svg+xml;utf8,' + encodeURIComponent(band(DARK))
+const uri = (s: string) => 'data:image/svg+xml;utf8,' + encodeURIComponent(s)
+const BANDS = { 'light-zh': uri(band(LIGHT)), 'dark-zh': uri(band(DARK)), 'light-en': uri(band(LIGHT, true)), 'dark-en': uri(band(DARK, true)) }
+// Every string on the page in both languages; data-t="key" picks one.
+const TEXT: Record<string, [string, string]> = {
+  title: ['Lemon Themes · 柠檬小熊试穿', 'Lemon Themes · lemon-bear try-on'],
+  h1: ['Lemon Themes · 柠檬小熊', 'Lemon Themes · lemon-bear'],
+  hint: ['点小熊、点两边空白处，或者按右边的按钮。', 'Click the bear, click the margins, or use the buttons.'],
+  nap: ['打个盹', 'Nap'],
+  party: ['撒花', 'Celebrate'],
+  dark: ['深色', 'Dark'],
+  lang: ['English', '中文'],
+  s1: ['柠檬小熊桌面主题', 'Lemon bear theme'],
+  s2: ['周末做个小游戏', 'A weekend game'],
+  s3: ['整理照片和相册', 'Sort the photo albums'],
+  s4: ['读论文笔记', 'Paper reading notes'],
+  m1: ['帮我把这个页面换成柠檬小熊的样子 🍋', 'Make this page look like the lemon bear 🍋'],
+  m2: ['好的！背景换成了奶油格纹，两边飘着柠檬和雏菊，右下角的小熊会眨眼，十分钟没动静还会趴下睡觉。', 'Done! Cream gingham behind, lemons and daisies drifting down both sides, and a bear in the corner that blinks and naps after ten quiet minutes.'],
+  m3: ['太可爱了！', 'So cute!'],
+  m4: ['被夸了，小熊在撒花呢。输入框上面那条是用量：模型、思考强度、上下文、Token、子 agent、按 API 价折算的金额，还有 5 小时和每周额度。', 'You praised it, so the bear throws stickers. The band above the prompt is your usage: model, thinking effort, context, tokens, subagents, the equivalent cost at API prices, and the 5-hour and weekly limits.'],
+  prompt: ['输入 / 以使用命令', 'Type / for commands'],
+  install: ['安装：', 'Install: '],
+  needs: ['需要 Claude Code 2.1.330+ · MIT', 'Needs Claude Code 2.1.330+ · MIT'],
+}
+const t = (k: string) => `<span data-t="${k}">${TEXT[k][0]}</span>`
 const badge = 'data:image/svg+xml;utf8,' + encodeURIComponent(BADGE)
 
 const page = `<!doctype html>
@@ -245,7 +269,7 @@ const page = `<!doctype html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Lemon Themes · 柠檬小熊试穿</title>
+<title>${TEXT.title[0]}</title>
 <meta name="description" content="Try on the lemon-bear skin for the Claude desktop app: a storybook backdrop with a blinking honey bear.">
 <link rel="icon" href="${badge}">
 <style>
@@ -290,11 +314,12 @@ const page = `<!doctype html>
 <body>
 <header>
   <img src="${badge}" width="46" alt="">
-  <div><h1>Lemon Themes · 柠檬小熊</h1><p>点小熊、点两边空白处，或者按右边的按钮。Click the bear, click the margins, or use the buttons.</p></div>
+  <div><h1>${t('h1')}</h1><p>${t('hint')}</p></div>
   <div class="controls">
-    <button id="nap" aria-pressed="false">打个盹 Nap</button>
-    <button id="party">撒花 Celebrate</button>
-    <button id="dark" aria-pressed="false">深色 Dark</button>
+    <button id="nap" aria-pressed="false">${t('nap')}</button>
+    <button id="party">${t('party')}</button>
+    <button id="dark" aria-pressed="false">${t('dark')}</button>
+    <button id="lang" lang="en">${t('lang')}</button>
     <a href="https://github.com/simpleciki/lemon-themes">GitHub</a>
   </div>
 </header>
@@ -303,29 +328,42 @@ const page = `<!doctype html>
   <div class="chrome">
     <div class="side">
       <div class="dots"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i></div>
-      <div class="item on">柠檬小熊桌面主题</div><div class="item">周末做个小游戏</div><div class="item">整理照片和相册</div><div class="item">读论文笔记</div>
+      <div class="item on">${t('s1')}</div><div class="item">${t('s2')}</div><div class="item">${t('s3')}</div><div class="item">${t('s4')}</div>
     </div>
     <div class="main" id="main">
       <div class="chat">
-        <div class="msg user"><img class="st" src="${sticker('lemon')}" alt="">帮我把这个页面换成柠檬小熊的样子 🍋</div>
-        <div class="msg bot"><img class="st" src="${sticker('bee')}" alt="">好的！背景换成了奶油格纹，两边飘着柠檬和雏菊，右下角的小熊会眨眼，十分钟没动静还会趴下睡觉。</div>
-        <div class="msg user pink"><img class="st" src="${sticker('heart')}" alt="">太可爱了！</div>
-        <div class="msg bot">被夸了，小熊在撒花呢。输入框上面那条是用量：模型、思考强度、上下文、Token、子 agent、按 API 价折算的金额，还有 5 小时和每周额度。</div>
+        <div class="msg user"><img class="st" src="${sticker('lemon')}" alt="">${t('m1')}</div>
+        <div class="msg bot"><img class="st" src="${sticker('bee')}" alt="">${t('m2')}</div>
+        <div class="msg user pink"><img class="st" src="${sticker('heart')}" alt="">${t('m3')}</div>
+        <div class="msg bot">${t('m4')}</div>
       </div>
-      <div class="dock"><img id="band" src="${bandLight}" alt="usage band"><div class="prompt">输入 / 以使用命令</div></div>
+      <div class="dock"><img id="band" src="${BANDS['light-zh']}" alt="usage band"><div class="prompt">${t('prompt')}</div></div>
     </div>
   </div>
 </div>
 <footer>
-  <span>安装 Install：<code>/plugin install lemon-bear --marketplace simpleciki/lemon-themes</code></span>
-  <span>Needs Claude Code 2.1.330+ · MIT</span>
+  <span>${t('install')}<code>/plugin install lemon-bear --marketplace simpleciki/lemon-themes</code></span>
+  <span>${t('needs')}</span>
 </footer>
 <script>
 const SCENES = ${JSON.stringify(scenes)};
 const STICKERS = ${JSON.stringify(stickerUrls)};
-const BAND = { light: ${JSON.stringify(bandLight)}, dark: ${JSON.stringify(bandDark)} };
+const BANDS = ${JSON.stringify(BANDS)};
+const TEXT = ${JSON.stringify(TEXT)};
 const bd = document.getElementById('bd'), win = document.getElementById('win');
 let asleep = false, dark = false, timer = 0, pops = 0;
+const q = new URLSearchParams(location.search).get('lang');
+let en = q ? q === 'en' : !/^zh/i.test(navigator.language || '');
+const setBand = () => { document.getElementById('band').src = BANDS[(dark ? 'dark' : 'light') + '-' + (en ? 'en' : 'zh')]; };
+function setLang() {
+  const i = en ? 1 : 0;
+  document.documentElement.lang = en ? 'en' : 'zh';
+  document.title = TEXT.title[i];
+  document.querySelectorAll('[data-t]').forEach(el => { el.textContent = TEXT[el.dataset.t][i]; });
+  document.getElementById('lang').lang = en ? 'zh' : 'en';
+  setBand();
+}
+setLang();
 const darken = s => dark ? s.replace('.bg{fill:#fbf3d9}.gingham{opacity:.32}', '.bg{fill:#1f1912}.gingham{opacity:.07}') : s;
 function show(name, ms) {
   bd.innerHTML = darken(SCENES[name]);
@@ -347,8 +385,12 @@ document.getElementById('nap').onclick = () => { asleep = !asleep; napBtn(); sho
 document.getElementById('party').onclick = () => { asleep = false; napBtn(); show('party', 3600); };
 document.getElementById('dark').onclick = e => {
   dark = !dark; document.documentElement.classList.toggle('dark', dark); document.body.classList.toggle('dark', dark);
-  e.target.setAttribute('aria-pressed', String(dark)); document.getElementById('band').src = dark ? BAND.dark : BAND.light;
+  e.currentTarget.setAttribute('aria-pressed', String(dark)); setBand();
   show(asleep ? 'sleep' : 'sit');
+};
+document.getElementById('lang').onclick = () => {
+  en = !en; setLang();
+  const u = new URL(location.href); u.searchParams.set('lang', en ? 'en' : 'zh'); history.replaceState(null, '', u);
 };
 </script>
 </body>
