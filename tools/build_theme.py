@@ -2,7 +2,8 @@
 
     python tools/build_theme.py lemon-bear
 
-Reads art-src/<theme>/theme-build.json and writes plugins/<theme>/hooks/sprites.ts and frames.ts.
+Reads art-src/<theme>/theme-build.json and writes sprites.ts and frames.ts to its `out` folder
+(plugins/lemon-themes/hooks/skins/<theme>; default plugins/<theme>/hooks).
 
 - A *sheet* is one transparent PNG holding several separate items; items are found by their
   outline (connected opaque pixels) and numbered left to right, top to bottom.
@@ -31,9 +32,23 @@ ROOT = Path(__file__).resolve().parent.parent
 
 # ---------- finding items on a sheet ----------
 
-def split_sheet(path: Path, alpha_cut: int, min_px: int = 400):
+def mute_red(im: Image.Image, to=(176, 128, 104)) -> Image.Image:
+    """Turn strong reds that are not pale pink (an ear's shadowed inside) into one soft tan.
+
+    Traced with a short palette, a few red pixels become a hard red streak; pink cheeks stay.
+    """
+    a = np.array(im).astype(int)
+    r, g = a[:, :, 0], a[:, :, 1]
+    red = (r - g > 55) & (r < 200) & (a[:, :, 3] > 0)
+    a[red, 0], a[red, 1], a[red, 2] = to
+    return Image.fromarray(a.astype(np.uint8))
+
+
+def split_sheet(path: Path, alpha_cut: int, min_px: int = 400, red: bool = False):
     """Items on a transparent sheet, as (RGBA image, box) sorted into reading order."""
     im = Image.open(path).convert('RGBA')
+    if red:
+        im = mute_red(im)
     a = np.array(im)[:, :, 3]
     mask = a > alpha_cut
     # grow the mask a little so a pencil stroke stays with its item
@@ -92,35 +107,70 @@ def _trace(prepared: Image.Image, colors: int, speck: int) -> str:
     with tempfile.TemporaryDirectory() as d:
         src, out = Path(d) / 'in.png', Path(d) / 'out.svg'
         prepared.save(src)
-        cfg = vtracer.Config(filter_speckle=speck, color_precision=8, layer_difference=8, corner_threshold=90,
-                             length_threshold=6.0, splice_threshold=60, path_precision=0, max_colors=colors + 2)
-        cfg.convert_file(str(src), str(out))
+        # colours are already reduced to `colors` by quantize(); vtracer only traces the outlines
+        vtracer.convert_image_to_svg_py(str(src), str(out), colormode='color', hierarchical='stacked',
+                                        mode='spline', filter_speckle=speck, color_precision=8,
+                                        layer_difference=8, corner_threshold=90, length_threshold=6.0,
+                                        splice_threshold=60, path_precision=0)
         return ''.join(re.findall(r'<path[^>]*/>', out.read_text()))
 
 
-def _prepare(im: Image.Image, scale: float):
+def _soften(im: Image.Image, median: int) -> Image.Image:
+    """Median-filter away pencil grain; median=1 keeps small features such as eyes."""
+    return im if median <= 1 else im.filter(ImageFilter.MedianFilter(median))
+
+
+def _prepare(im: Image.Image, scale: float, median: int = 5):
     w, h = max(1, round(im.width * scale)), max(1, round(im.height * scale))
     im = im.resize((w, h), Image.LANCZOS)
     a = im.getchannel('A').filter(ImageFilter.GaussianBlur(1)).point(lambda v: 255 if v > 128 else 0)
-    rgb = im.convert('RGB').filter(ImageFilter.MedianFilter(5))
+    rgb = _soften(im.convert('RGB'), median)
     return rgb, a, w, h
 
 
-def trace_sprite(im: Image.Image, scale: float, colors: int, speck: int):
-    rgb, a, w, h = _prepare(im, scale)
+def trace_sprite(im: Image.Image, scale: float, colors: int, speck: int, median: int = 5):
+    rgb, a, w, h = _prepare(im, scale, median)
     q = rgb.quantize(colors=colors, method=Image.Quantize.MEDIANCUT).convert('RGBA')
     q.putalpha(a)
     return {'w': w, 'h': h, 'body': _trace(q, colors, speck)}
 
 
-def trace_with_palette(im: Image.Image, scale: float, palette: Image.Image, speck: int):
-    rgb, a, w, h = _prepare(im, scale)
+def trace_with_palette(im: Image.Image, scale: float, palette: Image.Image, speck: int, median: int = 5):
+    rgb, a, w, h = _prepare(im, scale, median)
     q = rgb.quantize(palette=palette, dither=Image.Dither.NONE).convert('RGBA')
     q.putalpha(a)
     return {'w': w, 'h': h, 'body': _trace(q, len(palette.getpalette()) // 3, speck)}
 
 
-def shared_palette(frames, colors: int) -> Image.Image:
+def face_detail(im: Image.Image, scale: float, d: dict) -> str:
+    """The face again, traced finely, to lay over a frame traced coarsely.
+
+    Coarse tracing keeps a frame small but loses eyes and mouth. Here we find the darkest marks
+    (eyes, closed lids, mouth: lightness below `ink`), take the box around them grown by `pad` of the
+    frame's width, keep only the darker skin inside it (lightness below `skin`) plus pink cheeks, and
+    trace just that, with `colors` and no smoothing. Its outline follows the face, so no seam shows.
+    """
+    w, h = max(1, round(im.width * scale)), max(1, round(im.height * scale))
+    small = im.resize((w, h), Image.LANCZOS)
+    arr = np.array(small).astype(int)
+    rgb, opaque = arr[:, :, :3], arr[:, :, 3] > 128
+    light = rgb.mean(axis=2)
+    ink = (light < d.get('ink', 45)) & opaque
+    if not ink.any():
+        return ''
+    ys, xs = np.where(ink)
+    pad = round(d.get('pad', 0.12) * w)
+    box = np.zeros_like(ink)
+    box[max(0, ys.min() - pad):ys.max() + pad + 1, max(0, xs.min() - pad):xs.max() + pad + 1] = True
+    pink = (rgb[:, :, 0] - rgb[:, :, 1] > 45) & (rgb[:, :, 0] > 190)
+    keep = box & opaque & ((light < d.get('skin', 135)) | pink)
+    a = Image.fromarray((keep * 255).astype(np.uint8))
+    q = small.convert('RGB').quantize(colors=d.get('colors', 8), method=Image.Quantize.MEDIANCUT).convert('RGBA')
+    q.putalpha(a)
+    return _trace(q, d.get('colors', 8), d.get('speck', 2))
+
+
+def shared_palette(frames, colors: int, median: int = 5) -> Image.Image:
     strip = Image.new('RGB', (sum(f.width for f in frames), max(f.height for f in frames)), (255, 255, 255))
     x = 0
     for f in frames:
@@ -128,7 +178,7 @@ def shared_palette(frames, colors: int) -> Image.Image:
         bg.paste(f.convert('RGB'), mask=f.getchannel('A').point(lambda v: 255 if v > 128 else 0))
         strip.paste(bg, (x, 0))
         x += f.width
-    return strip.filter(ImageFilter.MedianFilter(5)).quantize(colors=colors, method=Image.Quantize.MEDIANCUT)
+    return _soften(strip, median).quantize(colors=colors, method=Image.Quantize.MEDIANCUT)
 
 
 # ---------- writing the plugin's data files ----------
@@ -146,13 +196,13 @@ def write_ts(path: Path, header: str, type_line: str, name: str, data) -> None:
 def main(theme: str) -> None:
     art = ROOT / 'art-src' / theme
     cfg = json.loads((art / 'theme-build.json').read_text())
-    hooks = ROOT / 'plugins' / theme / 'hooks'
+    hooks = ROOT / cfg.get('out', f'plugins/{theme}/hooks')
     sheets = {}
 
     def items(sheet: str):
         if sheet not in sheets:
             s = cfg['sheets'][sheet]
-            sheets[sheet] = split_sheet(art / s['file'], s.get('alpha_cut', 200))
+            sheets[sheet] = split_sheet(art / s['file'], s.get('alpha_cut', 200), red=s.get('mute_red', False))
         return sheets[sheet]
 
     sprites = {}
@@ -160,7 +210,7 @@ def main(theme: str) -> None:
         im = items(s['sheet'])[s['item']][0]
         if s.get('trim_chin'):
             im = trim_chin(im)
-        sprites[name] = trace_sprite(im, s['scale'], s['colors'], s['speck'])
+        sprites[name] = trace_sprite(im, s['scale'], s['colors'], s['speck'], s.get('median', 5))
         print(f'sprite {name:9} {sprites[name]["w"]}x{sprites[name]["h"]}  {len(sprites[name]["body"]):6} chars')
 
     frames = {}
@@ -170,10 +220,12 @@ def main(theme: str) -> None:
         found.sort(key=lambda f: f[1][0])
         floor = max(b[1] + b[3] for _, b in found)
         keep = [found[i] for i in s['keep']]
-        pal = shared_palette([f[0] for f in keep], s['colors'])
+        pal = shared_palette([f[0] for f in keep], s['colors'], s.get('median', 5))
         frames[name] = []
         for im, b in keep:
-            t = trace_with_palette(im, s['scale'], pal, s['speck'])
+            t = trace_with_palette(im, s['scale'], pal, s['speck'], s.get('median', 5))
+            if 'detail' in s:
+                t['body'] += face_detail(im, s['scale'], s['detail'])
             # how far this frame's feet sit above the shared floor (negative = in the air)
             t['dy'] = round((b[1] + b[3] - floor) * s['scale'], 1)
             frames[name].append({'w': t['w'], 'h': t['h'], 'dy': t['dy'], 'body': t['body']})

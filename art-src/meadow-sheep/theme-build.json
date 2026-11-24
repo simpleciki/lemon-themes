@@ -1,0 +1,150 @@
+{
+  "theme": "meadow-sheep",
+  "sheets": {
+    "props": {
+      "file": "props-A.png",
+      "alpha_cut": 220
+    },
+    "parts": {
+      "file": "parts-A.png",
+      "alpha_cut": 220
+    },
+    "idle": {
+      "file": "seq-idle.png",
+      "alpha_cut": 200,
+      "mute_red": true
+    },
+    "sleep": {
+      "file": "seq-sleep.png",
+      "alpha_cut": 200,
+      "mute_red": true
+    }
+  },
+  "sprites": {
+    "head": {
+      "sheet": "parts",
+      "item": 0,
+      "scale": 0.2,
+      "colors": 12,
+      "speck": 3,
+      "median": 3
+    },
+    "tree": {
+      "sheet": "props",
+      "item": 0,
+      "scale": 0.32,
+      "colors": 7,
+      "speck": 7
+    },
+    "blossom": {
+      "sheet": "props",
+      "item": 1,
+      "scale": 0.32,
+      "colors": 7,
+      "speck": 7
+    },
+    "cloud": {
+      "sheet": "props",
+      "item": 2,
+      "scale": 0.36,
+      "colors": 6,
+      "speck": 5
+    },
+    "daisy": {
+      "sheet": "props",
+      "item": 3,
+      "scale": 0.3,
+      "colors": 6,
+      "speck": 4
+    },
+    "dandelion": {
+      "sheet": "props",
+      "item": 4,
+      "scale": 0.32,
+      "colors": 6,
+      "speck": 6
+    },
+    "butterfly": {
+      "sheet": "props",
+      "item": 6,
+      "scale": 0.3,
+      "colors": 6,
+      "speck": 4
+    },
+    "clover": {
+      "sheet": "props",
+      "item": 7,
+      "scale": 0.3,
+      "colors": 5,
+      "speck": 6
+    },
+    "grass": {
+      "sheet": "props",
+      "item": 9,
+      "scale": 0.32,
+      "colors": 6,
+      "speck": 6
+    },
+    "sparkle": {
+      "sheet": "props",
+      "item": 10,
+      "scale": 0.3,
+      "colors": 4,
+      "speck": 5
+    },
+    "heart": {
+      "sheet": "props",
+      "item": 11,
+      "scale": 0.3,
+      "colors": 5,
+      "speck": 3
+    },
+    "wool": {
+      "sheet": "props",
+      "item": 8,
+      "scale": 0.3,
+      "colors": 6,
+      "speck": 4
+    }
+  },
+  "sequences": {
+    "idle": {
+      "sheet": "idle",
+      "keep": [
+        0,
+        1,
+        2
+      ],
+      "scale": 0.31,
+      "colors": 12,
+      "speck": 8,
+      "median": 5,
+      "detail": {
+        "ink": 58,
+        "pad": 0.1,
+        "skin": 135,
+        "colors": 8,
+        "speck": 2
+      }
+    },
+    "sleep": {
+      "sheet": "sleep",
+      "keep": [
+        0,
+        1
+      ],
+      "scale": 0.31,
+      "colors": 11,
+      "speck": 8,
+      "median": 5,
+      "detail": {
+        "ink": 58,
+        "pad": 0.1,
+        "skin": 135,
+        "colors": 8,
+        "speck": 2
+      }
+    }
+  },
+  "out": "plugins/lemon-themes/hooks/skins/meadow-sheep"
+}

@@ -66,3 +66,28 @@ Each line is something we tried, saw fail in the app, and fixed. Check them agai
   also has the same plugin as a dev mod then runs both, and the installed (older) copy can be the one
   drawing the theme and getting the clicks, so your dev edits seem to do nothing. Disable the installed
   plugin while you develop (`claude plugin disable <plugin>@<marketplace>`), then update and re-enable it.
+
+## Tracing (found while building `meadow-sheep`)
+
+- **`vtracer` on PyPI (0.6.x) has no `Config`.** `tools/build_theme.py` now calls
+  `vtracer.convert_image_to_svg_py`; colours are reduced by Pillow before tracing.
+- **Sheet items are numbered by rows about 150 px tall.** Items of one visual row that sit at
+  different heights can land in different rows, so the order changes. Draw every sprite once on a
+  labelled test page before trusting `item` numbers.
+- **Soft, shaded art (felt, clay) loses small faces when traced coarsely**: the median filter and a
+  short palette wipe out eyes and mouths. Trace the frame coarsely and the face again finely on top
+  (`detail` in `theme-build.json`); the fine layer follows the face's outline, so no seam shows.
+
+## The combined plugin (found while building `lemon-themes`, engine 2.1.330)
+
+- **Check with the engine the app runs, not the `claude` on your PATH.** A Homebrew `claude` 2.1.292
+  refused `ui.pointer` as "not an event" while the app's 2.1.330 takes it. The app's copy is under
+  `~/Library/Application Support/Claude/claude-code/<version>/*/claude.app/Contents/MacOS/claude`.
+- **Declare every atom in the file that reads or writes it.** Atoms imported from another file made
+  the module refuse to load ("the state library's read takes a source the scan can read").
+- **A test's `$` has no `$.store`.** Answer `store.get` and `store.set` in the test with an object of
+  your own, and read that object to check what was saved.
+- **A test mounting `Backdrop` needs `props.glass`** (`false` will do), or the hook is skipped.
+- **Rebuilding `lemon-bear` now traces it a little differently** (the vtracer call changed). Its
+  committed `sprites.ts` and `frames.ts` are the reviewed ones; rebuild it only when you mean to
+  look at the bear again.
