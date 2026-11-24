@@ -179,13 +179,17 @@ function cards(p: Pal) {
 }
 
 // ---------- the usage band ----------
-function band(p: Pal, en = false) {
+// What one skin's band is drawn from; the bear's own module by default.
+type BandArt = { mascot: string; think: string; token: string; agents: string; coin: string; juiceGlass: (n: number) => string; limitRing: (n: number) => string }
+const BEAR_BAND: BandArt = { mascot: ICONS.bear, think: ICONS.think, token: ICONS.honey, agents: ICONS.bee, coin: ICONS.coin, juiceGlass, limitRing }
+
+function band(p: Pal, en = false, k: BandArt = BEAR_BAND) {
   const icon = (src: string, x: number, size = 30) =>
     src.replace('<svg ', `<svg x="${x}" y="${(64 - size) / 2}" width="${size}" height="${size}" `)
   const items: [string, string, number][] = [
-    [ICONS.bear, 'Opus 5.5', 34], [ICONS.think, en ? 'Effort med' : '思考 中', 26], [juiceGlass(42), en ? 'Context 42%' : '上下文 42%', 32], [ICONS.honey, '1.2M tok', 30],
-    [ICONS.bee, en ? '3 subagents' : '子 agent 3 次', 32], [ICONS.coin, '≈ $4.20', 28],
-    [limitRing(27), en ? '5h 27% · resets 11:00' : '5 小时 27% · 11:00 重置', 28], [limitRing(61), en ? 'Week 61% · resets Wed 15:00' : '每周 61% · 周三 15:00 重置', 28],
+    [k.mascot, 'Opus 5.5', 34], [k.think, en ? 'Effort med' : '思考 中', 26], [k.juiceGlass(42), en ? 'Context 42%' : '上下文 42%', 32], [k.token, '1.2M tok', 30],
+    [k.agents, en ? '3 subagents' : '子 agent 3 次', 32], [k.coin, '≈ $4.20', 28],
+    [k.limitRing(27), en ? '5h 27% · resets 11:00' : '5 小时 27% · 11:00 重置', 28], [k.limitRing(61), en ? 'Week 61% · resets Wed 15:00' : '每周 61% · 周三 15:00 重置', 28],
   ]
   let x = 26
   let body = ''
@@ -229,40 +233,59 @@ for (const [mode, p, dark] of [['light', LIGHT, false], ['dark', DARK, true]] as
 // ---------- docs/index.html: the try-on page ----------
 // The plugin's own backdrop (same code as in the app) behind a mock of the app's window:
 // click the bear, click the margins, nap, celebrate, go dark.
-const { scene, STICKERS, BADGE } = await import(join(hooks, 'art.ts'))
-const scenes = {
-  sit: scene(false),
-  sleep: scene(true),
-  bear: scene(false, { what: 'bear', n: 1 }),
-  party: scene(false, { what: 'party', n: 2 }),
-}
-const stickerUrls = ['lemon', 'slice', 'daisy', 'heart', 'bee'].map(k => 'data:image/svg+xml;utf8,' + encodeURIComponent(STICKERS[k]))
-const sticker = (k: string) => 'data:image/svg+xml;utf8,' + encodeURIComponent(STICKERS[k])
+// Every skin of the combined plugin, drawn by its own art.ts; the page switches between them.
 const uri = (s: string) => 'data:image/svg+xml;utf8,' + encodeURIComponent(s)
+const SKIN_DEFS = [
+  { id: 'lemon-bear', cls: 'bear', name: ['柠檬小熊', 'Lemon bear'], pops: ['lemon', 'slice', 'daisy', 'heart', 'bee'], msg: ['lemon', 'bee', 'heart'],
+    light: '.bg{fill:#fbf3d9}.gingham{opacity:.32}', dark: '.bg{fill:#1f1912}.gingham{opacity:.07}' },
+  { id: 'meadow-sheep', cls: 'meadow', name: ['草地小羊', 'Meadow lamb'], pops: ['daisy', 'clover', 'heart', 'butterfly', 'wool'], msg: ['daisy', 'butterfly', 'heart'],
+    light: '.bg{fill:#f5f8ec}.hatch{opacity:.55}.hill{fill:#cfe6a6}', dark: '.bg{fill:#151c14}.hatch{opacity:.12}.hill{fill:#2c3b22}' },
+]
+const SKINS: Record<string, unknown> = {}
+for (const d of SKIN_DEFS) {
+  const art = await import(join(ROOT, 'plugins', 'lemon-themes', 'hooks', 'skins', d.id, 'art.ts'))
+  SKINS[d.id] = {
+    cls: d.cls, name: d.name, light: d.light, dark: d.dark,
+    scenes: { sit: art.scene(false), sleep: art.scene(true), bear: art.scene(false, { what: 'mascot', n: 1 }), party: art.scene(false, { what: 'party', n: 2 }) },
+    pops: d.pops.map(k => uri(art.STICKERS[k])),
+    msg: d.msg.map(k => uri(art.STICKERS[k])),
+    badge: uri(art.BADGE),
+    bands: d.id === 'lemon-bear' ? null : (() => {
+      const I = art.ICONS
+      const k: BandArt = { mascot: I.lamb, think: I.think, token: I.wool, agents: I.butterfly, coin: I.coin, juiceGlass: art.juiceGlass, limitRing: art.limitRing }
+      const L: Pal = { ...LIGHT, ink: '#2f3a24', soft: '#5f6e4f', card: '#fdfef8', line: '#cfe3b0' }
+      const D: Pal = { ...DARK, ink: '#eef4e2', soft: '#b5c4a0', card: '#1c251a', line: '#33432c' }
+      return { 'light-zh': uri(band(L, false, k)), 'dark-zh': uri(band(D, false, k)), 'light-en': uri(band(L, true, k)), 'dark-en': uri(band(D, true, k)) }
+    })(),
+  }
+}
+const first = SKINS['lemon-bear'] as { msg: string[]; badge: string }
+const sticker = (i: number) => first.msg[i] ?? ''
 const BANDS = { 'light-zh': uri(band(LIGHT)), 'dark-zh': uri(band(DARK)), 'light-en': uri(band(LIGHT, true)), 'dark-en': uri(band(DARK, true)) }
 // Every string on the page in both languages; data-t="key" picks one.
 const TEXT: Record<string, [string, string]> = {
-  title: ['Lemon Themes · 柠檬小熊试穿', 'Lemon Themes · lemon-bear try-on'],
-  h1: ['Lemon Themes · 柠檬小熊', 'Lemon Themes · lemon-bear'],
-  hint: ['点小熊、点两边空白处，或者按右边的按钮。小熊睡着时点哪里都能叫醒它。', 'Click the bear, click the margins, or use the buttons. A click anywhere wakes the sleeping bear.'],
+  title: ['Lemon Themes · 皮肤试穿', 'Lemon Themes · skin try-on'],
+  h1: ['Lemon Themes', 'Lemon Themes'],
+  hint: ['点右下角的吉祥物、点两边空白处，或者按右边的按钮换皮肤。它睡着时点哪里都能叫醒。', 'Click the mascot, click the margins, or switch skins with the buttons. A click anywhere wakes it up.'],
+  skin: ['换皮肤', 'Switch skin'],
   nap: ['打个盹', 'Nap'],
   party: ['撒花', 'Celebrate'],
   dark: ['深色', 'Dark'],
   lang: ['English', '中文'],
-  s1: ['柠檬小熊桌面主题', 'Lemon bear theme'],
+  s1: ['Claude 桌面皮肤', 'Desktop app skins'],
   s2: ['周末做个小游戏', 'A weekend game'],
   s3: ['整理照片和相册', 'Sort the photo albums'],
   s4: ['读论文笔记', 'Paper reading notes'],
-  m1: ['帮我把这个页面换成柠檬小熊的样子 🍋', 'Make this page look like the lemon bear 🍋'],
-  m2: ['好的！背景换成了奶油格纹，两边飘着柠檬和雏菊，右下角的小熊会眨眼，十分钟没动静还会趴下睡觉。', 'Done! Cream gingham behind, lemons and daisies drifting down both sides, and a bear in the corner that blinks and naps after ten quiet minutes.'],
+  m1: ['帮我给 App 换个皮肤 🌼', 'Give my app a new skin 🌼'],
+  m2: ['好的！输入 /skin 就能选：柠檬小熊或草地小羊，还能关掉背景动画和特效。右下角的吉祥物会眨眼，十分钟没动静会睡觉。', 'Done! Type /skin to pick one: the lemon bear or the meadow lamb, and switch off motion or effects. The mascot in the corner blinks and naps after ten quiet minutes.'],
   m3: ['太可爱了！', 'So cute!'],
-  m4: ['被夸了，小熊在撒花呢。输入框上面那条是用量：模型、思考强度、上下文、Token、子 agent、按 API 价折算的金额，还有 5 小时和每周额度。', 'You praised it, so the bear throws stickers. The band above the prompt is your usage: model, thinking effort, context, tokens, subagents, the equivalent cost at API prices, and the 5-hour and weekly limits.'],
+  m4: ['被夸了，它在撒花呢。输入框上面那条是用量：模型、思考强度、上下文、Token、子 agent、按 API 价折算的金额，还有 5 小时和每周额度。', 'You praised it, so it throws stickers. The band above the prompt is your usage: model, thinking effort, context, tokens, subagents, the equivalent cost at API prices, and the 5-hour and weekly limits.'],
   prompt: ['输入 / 以使用命令', 'Type / for commands'],
   install: ['安装：', 'Install: '],
   needs: ['需要 Claude Code 2.1.330+ · MIT', 'Needs Claude Code 2.1.330+ · MIT'],
 }
 const t = (k: string) => `<span data-t="${k}">${TEXT[k][0]}</span>`
-const badge = 'data:image/svg+xml;utf8,' + encodeURIComponent(BADGE)
+const badge = first.badge
 
 const page = `<!doctype html>
 <html lang="zh">
@@ -270,14 +293,17 @@ const page = `<!doctype html>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${TEXT.title[0]}</title>
-<meta name="description" content="Try on the lemon-bear skin for the Claude desktop app: a storybook backdrop with a blinking honey bear.">
+<meta name="description" content="Try on the Lemon Themes skins for the Claude desktop app: a lemon bear and a meadow lamb on storybook backdrops.">
 <link rel="icon" href="${badge}">
 <style>
   :root { --ink:#3b2a19; --soft:#7a6248; --card:#fffcf2; --line:#f0d98f; --user:#fff2b0; --user-line:#e6bf4a; --side:#fdf7e6ee; --glass:#fffbefcc; }
+  .meadow { --ink:#2f3a24; --soft:#5f6e4f; --card:#fdfef8; --line:#cfe3b0; --user:#e6f3cf; --user-line:#a9cf7d; --side:#f9fbf2ee; --glass:#fdfef8cc; }
+  .dark.meadow { --ink:#eef4e2; --soft:#b5c4a0; --card:#1c251a; --line:#33432c; --user:#2d3d22; --user-line:#5f8a3a; --side:#1c251aee; --glass:#232d20cc; }
   .dark { --ink:#fbf0d6; --soft:#cdb995; --card:#2a2219; --line:#4a3a26; --user:#4a3c1c; --user-line:#8a6d26; --side:#282016ee; --glass:#30271bcc; }
   * { box-sizing: border-box; }
   body { margin:0; font-family: ui-rounded, 'SF Pro Rounded', 'PingFang SC', 'Hiragino Maru Gothic ProN', system-ui, sans-serif; color: var(--ink); background:#e9dcb6; }
   .dark body, body.dark { background:#14100b; }
+  body.meadow { background:#dfe9c8; } body.dark.meadow { background:#0f150d; }
   header { max-width: 1240px; margin: 28px auto 14px; padding: 0 20px; display:flex; align-items:center; gap:16px; flex-wrap:wrap; }
   header h1 { margin:0; font-size: 30px; letter-spacing:.5px; }
   header p { margin:0; color: var(--soft); }
@@ -313,9 +339,10 @@ const page = `<!doctype html>
 </head>
 <body>
 <header>
-  <img src="${badge}" width="46" alt="">
+  <img id="badge" src="${badge}" width="46" alt="">
   <div><h1>${t('h1')}</h1><p>${t('hint')}</p></div>
   <div class="controls">
+    <button id="skin">${t('skin')}</button>
     <button id="nap" aria-pressed="false">${t('nap')}</button>
     <button id="party">${t('party')}</button>
     <button id="dark" aria-pressed="false">${t('dark')}</button>
@@ -332,9 +359,9 @@ const page = `<!doctype html>
     </div>
     <div class="main" id="main">
       <div class="chat">
-        <div class="msg user"><img class="st" src="${sticker('lemon')}" alt="">${t('m1')}</div>
-        <div class="msg bot"><img class="st" src="${sticker('bee')}" alt="">${t('m2')}</div>
-        <div class="msg user pink"><img class="st" src="${sticker('heart')}" alt="">${t('m3')}</div>
+        <div class="msg user"><img class="st" src="${sticker(0)}" alt="">${t('m1')}</div>
+        <div class="msg bot"><img class="st" src="${sticker(1)}" alt="">${t('m2')}</div>
+        <div class="msg user pink"><img class="st" src="${sticker(2)}" alt="">${t('m3')}</div>
         <div class="msg bot">${t('m4')}</div>
       </div>
       <div class="dock"><img id="band" src="${BANDS['light-zh']}" alt="usage band"><div class="prompt">${t('prompt')}</div></div>
@@ -342,19 +369,21 @@ const page = `<!doctype html>
   </div>
 </div>
 <footer>
-  <span>${t('install')}<code>/plugin install lemon-bear --marketplace simpleciki/lemon-themes</code></span>
+  <span>${t('install')}<code>/plugin install lemon-themes --marketplace simpleciki/lemon-themes</code></span>
   <span>${t('needs')}</span>
 </footer>
 <script>
-const SCENES = ${JSON.stringify(scenes)};
-const STICKERS = ${JSON.stringify(stickerUrls)};
+const SKINS = ${JSON.stringify(SKINS)};
+const ORDER = ${JSON.stringify(SKIN_DEFS.map(d => d.id))};
+let skin = new URLSearchParams(location.search).get('skin');
+if (!ORDER.includes(skin)) skin = ORDER[0];
 const BANDS = ${JSON.stringify(BANDS)};
 const TEXT = ${JSON.stringify(TEXT)};
 const bd = document.getElementById('bd'), win = document.getElementById('win');
 let asleep = false, dark = false, timer = 0, pops = 0;
 const q = new URLSearchParams(location.search).get('lang');
 let en = q ? q === 'en' : !/^zh/i.test(navigator.language || '');
-const setBand = () => { document.getElementById('band').src = BANDS[(dark ? 'dark' : 'light') + '-' + (en ? 'en' : 'zh')]; };
+const setBand = () => { const B = SKINS[skin].bands || BANDS; document.getElementById('band').src = B[(dark ? 'dark' : 'light') + '-' + (en ? 'en' : 'zh')]; };
 function setLang() {
   const i = en ? 1 : 0;
   document.documentElement.lang = en ? 'en' : 'zh';
@@ -364,20 +393,35 @@ function setLang() {
   setBand();
 }
 setLang();
-const darken = s => dark ? s.replace('.bg{fill:#fbf3d9}.gingham{opacity:.32}', '.bg{fill:#1f1912}.gingham{opacity:.07}') : s;
+const darken = s => dark ? s.replace(SKINS[skin].light, SKINS[skin].dark) : s;
 function show(name, ms) {
-  bd.innerHTML = darken(SCENES[name]);
+  bd.innerHTML = darken(SKINS[skin].scenes[name]);
   clearTimeout(timer);
   if (ms) timer = setTimeout(() => show(asleep ? 'sleep' : 'sit'), ms);
 }
-show('sit');
+function setSkin() {
+  const k = SKINS[skin];
+  ORDER.forEach(id => { document.body.classList.toggle(SKINS[id].cls, id === skin); document.documentElement.classList.toggle(SKINS[id].cls, id === skin); });
+  document.getElementById('badge').src = k.badge;
+  document.querySelectorAll('.msg img.st').forEach((im, i) => { im.src = k.msg[i] || k.msg[0]; });
+  const next = SKINS[ORDER[(ORDER.indexOf(skin) + 1) % ORDER.length]];
+  document.getElementById('skin').textContent = (en ? 'Switch to ' : '换成') + next.name[en ? 1 : 0];
+  setBand();
+  show(asleep ? 'sleep' : 'sit');
+}
+setSkin();
+document.getElementById('skin').onclick = () => {
+  skin = ORDER[(ORDER.indexOf(skin) + 1) % ORDER.length];
+  const u = new URL(location.href); u.searchParams.set('skin', skin); history.replaceState(null, '', u);
+  setSkin();
+};
 win.addEventListener('click', e => {
   if (e.target.closest('.chat, .dock, .side')) return;
   const r = win.getBoundingClientRect(), x = (e.clientX - r.left) / r.width, y = (e.clientY - r.top) / r.height;
   // as in the app: while the bear sleeps, a click anywhere on the margins wakes it
   if (asleep || (x > 0.84 && y > 0.5)) { asleep = false; napBtn(); show('bear', 3600); return; }
   const img = document.createElement('img');
-  img.src = STICKERS[pops++ % STICKERS.length]; img.className = 'pop';
+  const P = SKINS[skin].pops; img.src = P[pops++ % P.length]; img.className = 'pop';
   img.style.left = (e.clientX - r.left) + 'px'; img.style.top = (e.clientY - r.top) + 'px';
   win.appendChild(img); setTimeout(() => img.remove(), 1700);
 });
@@ -390,13 +434,34 @@ document.getElementById('dark').onclick = e => {
   show(asleep ? 'sleep' : 'sit');
 };
 document.getElementById('lang').onclick = () => {
-  en = !en; setLang();
+  en = !en; setLang(); setSkin();
   const u = new URL(location.href); u.searchParams.set('lang', en ? 'en' : 'zh'); history.replaceState(null, '', u);
 };
 </script>
 </body>
 </html>
 `
+// ---------- README pictures for the newer skins, cut straight from their backdrops ----------
+// Their scenes follow the reader's light or dark mode by themselves (prefers-color-scheme inside).
+const inside = (s: string) => s.slice(s.indexOf('>') + 1, s.lastIndexOf('</svg>'))
+const frame = (s: string, vb: string, w: number, h: number) =>
+  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${vb}" width="${w}" height="${h}"><svg x="0" y="0" width="1400" height="820">${inside(s)}</svg></svg>`
+for (const d of SKIN_DEFS.filter(x => x.id !== 'lemon-bear')) {
+  const k = SKINS[d.id] as { scenes: Record<string, string> }
+  const dir = join(ROOT, 'assets', d.id)
+  mkdirSync(dir, { recursive: true })
+  const card = (name: string) => frame(k.scenes[name] ?? '', '1080 500 320 320', 320, 320)
+  const files: [string, string][] = [
+    ['hero.svg', frame(k.scenes.sit ?? '', '0 0 1400 820', 1400, 820)],
+    ['state-sit.svg', card('sit')],
+    ['state-sleep.svg', card('sleep')],
+  ]
+  for (const [f, text] of files) {
+    writeFileSync(join(dir, f), text)
+    console.log(`assets/${d.id}/${f.padEnd(16)} ${(text.length / 1024).toFixed(0).padStart(4)} KB`)
+  }
+}
+
 mkdirSync(join(ROOT, 'docs'), { recursive: true })
 writeFileSync(join(ROOT, 'docs', 'index.html'), page)
 console.log(`docs/index.html        ${(page.length / 1024).toFixed(0).padStart(4)} KB`)
