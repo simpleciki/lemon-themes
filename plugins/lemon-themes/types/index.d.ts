@@ -23,7 +23,15 @@ export type Options = {
   band: boolean
   cheers: boolean
   nap: boolean
+  garden: boolean
+  status: boolean
 }
+
+/** The garden as read from $.store: one row per local day, [commits, green test runs]. */
+export type Garden = { ok: boolean; days: Record<string, [number, number]>; why?: 'read' | 'write' }
+
+/** What the mascot shows Claude doing. */
+export type Busy = 'idle' | 'busy' | 'wait' | 'worry'
 
 export type Limit = { kind: string; percentUsed: number; resetsAt: string | null }
 
@@ -54,6 +62,8 @@ declare module 'claude-code' {
       lang: 'zh' | 'en'
       pin: string
       look: string
+      garden: Garden
+      busy: Busy
     }
   }
 }

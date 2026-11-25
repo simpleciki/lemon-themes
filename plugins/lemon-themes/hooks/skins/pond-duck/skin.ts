@@ -2,7 +2,7 @@ import type { ThemeMessageRule, ThemeSetArgs } from 'claude-code'
 
 import { makeColors } from '../../make-colors.js'
 import type { Skin } from '../skin'
-import { BADGE, ICONS, STICKERS, juiceGlass, limitRing, scene, weatherAt } from './art'
+import { BADGE, ICONS, STICKERS, juiceGlass, limitRing, scene, sizeOf, weatherAt } from './art'
 
 const { theme, problems } = makeColors({
   label: 'Pond Duck',
@@ -10,9 +10,9 @@ const { theme, problems } = makeColors({
   light: {
     gray: {
       anchors: {
-        'surface-0': '#f7f8f0',
-        'surface-1': '#fbfbf5',
-        'surface-2': '#fefefb',
+        'surface-0': '#faf8f4',
+        'surface-1': '#fcfbf8',
+        'surface-2': '#fefefd',
         'text-primary': '#2d3440',
         'text-secondary': '#4a5260',
         'text-muted': '#636b78',
@@ -102,6 +102,12 @@ export const POND_DUCK: Skin = {
   badge: BADGE,
   ink: { heading: '#3a86ad', gauge: '#3f9ac4', border: '#9fd3ec', ok: '#4f9a5a' },
   emoji: { title: '🌼🐥', mascot: '🐥', context: '💧', token: '🪷', agents: '🪰' },
+  garden: variant =>
+    variant === 'dusk'
+      ? { flower: 'bud', bush: 'lantern', landmark: 'nReeds', bloom: 'nSparkle', size: sizeOf, ink: '#6b5fa0' }
+      : variant === 'rain'
+        ? { flower: 'clover', bush: 'mushroom', landmark: 'rainbow', bloom: 'rSparkle', size: sizeOf, ink: '#4f7a8a' }
+        : { flower: 'daisy', bush: 'lotus', landmark: 'reeds', bloom: 'sparkle', size: sizeOf, ink: '#4f8a3a' },
   cheers: {
     praise: { zh: ['小鸭收到夸夸啦，嘎嘎嘎！', '池塘里的荷花都开了～', '这个点子亮晶晶的！'], en: ['The duckling got a compliment: quack quack!', 'Every lotus on the pond just opened~', 'What a shiny idea!'] },
     commit: { zh: ['提交成功！小鸭给你叼来一片荷叶 🪷', '又一块砖稳稳放好了！'], en: ['Committed! The duckling brings you a lily pad 🪷', 'Another brick, firmly in place!'] },

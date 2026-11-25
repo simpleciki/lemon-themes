@@ -54,6 +54,7 @@ test('/skin 小羊 switches the skin, saves it and repaints with its scene', asy
 
 test('the pane switches animation off, saves it, and the backdrop then holds still', async ($, on) => {
   const box = fakeStore(on)
+  on('clock.now', () => ({ value: new Date(2026, 10, 24, 12, 0).getTime() }))
 
   const before = await $.ui.mount(backdrop('meadow-sheep'))
   const moving = await before.find({ type: 'Svg' })
@@ -75,6 +76,7 @@ test('the pane switches animation off, saves it, and the backdrop then holds sti
 
 test('turning the floating stickers off leaves fewer drawings in the backdrop', async ($, on) => {
   fakeStore(on)
+  on('clock.now', () => ({ value: new Date(2026, 10, 24, 12, 0).getTime() }))
 
   const full = await $.ui.mount(backdrop('lemon-bear'))
   const a = String((await full.find({ type: 'Svg' }))?.props.source)
@@ -115,6 +117,7 @@ test('a scene that is not ours is left to the engine', async ($, on) => {
 
 test('/skin en turns the pane, switches and skin names to English, and saves the choice', async ($, on) => {
   const box = fakeStore(on)
+  on('clock.now', () => ({ value: new Date(2026, 10, 24, 12, 0).getTime() }))
 
   const out = await $.command.run({ command: 'skin', args: 'en' })
   expect(out.text).toBe('Language: English.')

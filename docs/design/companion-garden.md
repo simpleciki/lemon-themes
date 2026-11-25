@@ -1,6 +1,6 @@
 # Companion garden: what makes a skin irreplaceable
 
-Status: agreed direction, not built. Written 2026-11-24 with Ciki.
+Status: agreed direction. Step 1 (garden + status) built 2026-11-24 on `feat/garden-status`; steps 2-5 not built. Written 2026-11-24 with Ciki.
 
 ## The idea in one line
 
@@ -47,8 +47,14 @@ Each step ships on its own, with tests, and is switched on or off from `/skin` l
 
 ## Open questions for the build session
 
-- Can the plugin see that Claude is waiting for permission or an answer? Check the API (`grep` the
-  types for permission / question events). If not, status falls back to busy / idle only.
+- ~~Can the plugin see that Claude is waiting for permission or an answer?~~ Yes (engine 2.1.331 types):
+  `classic.PermissionRequest` fires wherever the engine raises a permission prompt, whether or not any
+  settings hook is configured, and an `AskUserQuestion` call holds its `tool.call` open until answered.
+  Not yet seen in the app itself: check that the wave shows on a real prompt.
+- Built: 1 commit = a flower, 10 = a bush, 100 = a landmark (at most 9 + 9 + 4 drawn) plus up to 6
+  patches for this week's green runs, the true total written on the bank. Flowers use stickers each skin
+  already has (no new drawings yet). In the heaviest frame (duckling by day, party, waving) the last few
+  flowers give way for the 3.6 s of the party so the backdrop stays under the limit.
 - Where flowers grow: the bank at the bottom of each margin has room for about 20 before it looks
   crowded. After that, older flowers turn into bushes or the meadow "levels up" (a bigger field), so a
   year of work still fits in the 131,072-character backdrop.

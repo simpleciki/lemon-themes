@@ -96,3 +96,21 @@ Each line is something we tried, saw fail in the app, and fixed. Check them agai
   slots for those colours. It cost less than adding two more colours everywhere (99K against 140K).
 - **Flat oil-pastel art traces far better than felt or impasto**: coarse body + fine face gives four
   frames in about 60-75K with the crayon grain still showing.
+
+## The garden and the status bubble (engine 2.1.330 tests, 2.1.331 types, November 2026)
+
+- **`classic.PermissionRequest` reaches a plugin's hook** even with no settings hook configured (the
+  types say so); a test raises it with `$.classic.PermissionRequest({...})`, and needs its own
+  `on('classic.PermissionRequest', () => ({}))` beneath, or "no implementation".
+- **The types say every read in one dispatch sees one moment**, so a hook that reads a value another
+  event changed while it waited (a permission prompt in the middle of a tool call) may see the old one.
+  The status bubble keeps what it shows in a module variable instead of reading it back.
+- **A test that mocks `clock.after` fires the callback at once.** Leave `clock.after` and `clock.every`
+  unmocked: the kit's own clock holds them.
+- **A test cannot draw while one of its own `tool.call` hooks is held open**: `$.ui.mount` waits for
+  the held call and the test times out. Raise the events one after another instead.
+- **`$.session.start` in a test needs `cwd`**, in its input and from the test's own `session.start`
+  hook (`() => ({ cwd: '/tmp' })`), plus answers for every `$` call the hook makes (`env.get`,
+  `session.usage`, `session.model`, `agent.list`, `command.register`, `ui.toast`).
+- **Count both strips' wrappers in a size budget.** An overlay that fills "what is left" overshot the
+  131,072 limit by 89 characters because one `<svg>` wrapper was not counted.
