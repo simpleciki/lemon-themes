@@ -283,7 +283,7 @@ const TEXT: Record<string, [string, string]> = {
   s3: ['整理照片和相册', 'Sort the photo albums'],
   s4: ['读论文笔记', 'Paper reading notes'],
   m1: ['帮我给 App 换个皮肤 🌼', 'Give my app a new skin 🌼'],
-  m2: ['好的！输入 /skin 就能选：柠檬小熊或草地小羊，还能关掉背景动画和特效。右下角的吉祥物会眨眼，十分钟没动静会睡觉。', 'Done! Type /skin to pick one: the lemon bear or the meadow lamb, and switch off motion or effects. The mascot in the corner blinks and naps after ten quiet minutes.'],
+  m2: ['好的！输入 /skin 就能从十套皮肤里选，还能关掉背景动画和特效。右下角的吉祥物会眨眼，十分钟没动静会睡觉。', 'Done! Type /skin to pick one of ten skins, and switch off motion or effects. The mascot in the corner blinks and naps after ten quiet minutes.'],
   m3: ['太可爱了！', 'So cute!'],
   m4: ['被夸了，它在撒花呢。输入框上面那条是用量：模型、思考强度、上下文、Token、子 agent、按 API 价折算的金额，还有 5 小时和每周额度。', 'You praised it, so it throws stickers. The band above the prompt is your usage: model, thinking effort, context, tokens, subagents, the equivalent cost at API prices, and the 5-hour and weekly limits.'],
   prompt: ['输入 / 以使用命令', 'Type / for commands'],
