@@ -1,7 +1,5 @@
-// Paper-cut drawing helpers: shapes with slightly uneven, hand-cut edges, each laid on the page with
-// a soft shadow under it (a darker, see-through copy shifted down and right). Each layer's outline is
-// written once and its shadow is a <use> of it, so a layer costs one path. A seeded random keeps every
-// render the same.
+// Drawing helpers: shapes with slightly uneven, hand-cut edges and a thick warm outline (sticker
+// style). A seeded random keeps every render the same.
 
 export type Pt = [number, number]
 
@@ -82,22 +80,21 @@ export function blob(cx: number, cy: number, rx: number, ry: number, seed: numbe
   return smooth(deg === 0 ? p : rot(p, cx, cy, deg))
 }
 
-/** The shadow colour every paper layer casts. */
-export const SHADOW = '#2b2350'
+/** The warm dark brown every drawn shape is outlined in (kawaii sticker style). */
+export const OUT = '#4a3026'
 
 /**
- * Paper layers for one drawing. `cut(fill, d)` lays a shape with its shadow; `ink(fill, d)` draws
- * flat details (eyes, stitches) with no shadow. Ids start with `prefix`, unique across all sprites.
+ * Outlined drawing for one sprite: `cut(fill, d)` is a flat shape with a thick round-joined outline;
+ * `blobs(fill, d)` outlines several overlapping shapes as one (the outline is a fatter stroke laid
+ * under the fills, so no seams show where they overlap); `tone(fill, d)` is a flat inner shade with
+ * no outline; `line(color, d, w)` is a round-capped stroke.
  */
-export function sheet(prefix: string, dx = 1.2, dy = 1.8, op = 0.24) {
-  let i = 0
-  const cut = (fill: string, d: string) => {
-    const id = `${prefix}${i++}`
-    return `<use href="#${id}" x="${dx}" y="${dy}" fill="${SHADOW}" fill-opacity="${op}"/><g fill="${fill}"><path id="${id}" d="${d}"/></g>`
-  }
-  const ink = (fill: string, d: string, extra = '') => `<path fill="${fill}" d="${d}"${extra}/>`
-  const line = (color: string, d: string, w = 1.4) => `<path d="${d}" fill="none" stroke="${color}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round"/>`
-  return { cut, ink, line }
+export function sheet(w = 4.5) {
+  const cut = (fill: string, d: string, sw = w) => `<path fill="${fill}" stroke="${OUT}" stroke-width="${sw}" stroke-linejoin="round" d="${d}"/>`
+  const blobs = (fill: string, d: string, sw = w) => `<path fill="${OUT}" stroke="${OUT}" stroke-width="${sw * 2}" stroke-linejoin="round" d="${d}"/><path fill="${fill}" d="${d}"/>`
+  const tone = (fill: string, d: string, extra = '') => `<path fill="${fill}" d="${d}"${extra}/>`
+  const line = (color: string, d: string, lw = 1.4) => `<path d="${d}" fill="none" stroke="${color}" stroke-width="${lw}" stroke-linecap="round" stroke-linejoin="round"/>`
+  return { cut, blobs, tone, line }
 }
 
 /** A circle as a path (for joining several into one layer). */

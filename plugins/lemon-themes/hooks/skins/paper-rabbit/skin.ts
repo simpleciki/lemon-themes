@@ -9,6 +9,8 @@ import { arc, blob, circle, poly, rot, sheet, smooth } from './paper'
 import type { Pt } from './paper'
 import { headArt, sit, sleep } from './rabbit'
 
+const { cut, blobs, tone, line } = sheet(4.5)
+
 const C = {
   moon: '#fff0c2',
   moon2: '#ffe08a',
@@ -53,15 +55,14 @@ function crescent(cx: number, cy: number, R: number, open: number, thick: number
 }
 
 function moon(): Art {
-  const { cut, ink, line } = sheet('pr-mo')
   return art(
     100,
     100,
     cut(C.moon2, smooth(crescent(50, 50, 42, 52, 24))) +
-      cut(C.moon, smooth(crescent(48, 50, 34, 68, 15))) +
-      line(C.ink, 'M17 47q4 3.4 8 0', 1.8) +
+      tone(C.moon, smooth(crescent(48, 50, 34, 68, 15))) +
+      line(C.ink, 'M16 46q4.5 4 9 0', 2.6) +
       `<ellipse cx="20" cy="57" rx="4" ry="2.4" fill="${C.pink}" opacity=".6"/>` +
-      ink(C.moon2, circle(30, 24, 2.6) + circle(30, 78, 2.4)),
+      tone(C.moon2, circle(30, 24, 2.6) + circle(30, 78, 2.4)),
   )
 }
 
@@ -71,23 +72,20 @@ function star(): Art {
     const r = i % 2 ? r2 : r1
     return [50 + r * Math.cos(a), 54 + r * Math.sin(a)] as Pt
   })
-  const { cut } = sheet('pr-st', 1.6, 2.4)
-  return art(100, 100, cut(C.star, poly(p(46, 21), 61, 2.4)) + cut(C.star2, poly(p(20, 9), 62, 1.2)))
+  return art(100, 100, cut(C.star, poly(p(46, 21), 61, 2.4)) + tone(C.star2, poly(p(20, 9), 62, 1.2)))
 }
 
 function sparkle(): Art {
   const four = (cx: number, cy: number, r: number, w: number): Pt[] => [
     [cx, cy - r], [cx + w, cy - w], [cx + r, cy], [cx + w, cy + w], [cx, cy + r], [cx - w, cy + w], [cx - r, cy], [cx - w, cy - w],
   ]
-  const { cut } = sheet('pr-sp', 1.6, 2.4)
-  return art(100, 100, cut(C.star, poly(four(46, 54, 42, 9), 71, 2)) + cut(C.star2, poly(four(46, 54, 18, 4), 72, 1)) + cut(C.star, poly(four(84, 16, 13, 3.5), 73, 1)))
+  return art(100, 100, cut(C.star, poly(four(46, 54, 42, 9), 71, 2)) + tone(C.star2, poly(four(46, 54, 18, 4), 72, 1)) + cut(C.star, poly(four(84, 16, 13, 3.5), 73, 1)))
 }
 
 function cloud(): Art {
-  const { cut } = sheet('pr-cl', 1.6, 2.6, 0.18)
   const back = blob(36, 30, 18, 15, 81) + blob(62, 24, 22, 19, 82) + blob(84, 36, 14, 12, 83) + blob(56, 40, 40, 12, 84, 0, 0.03, 12)
   const front = blob(22, 44, 15, 11, 85) + blob(44, 36, 18, 15, 86) + blob(68, 42, 16, 12, 87) + blob(48, 50, 38, 9, 88, 0, 0.03, 12)
-  return art(110, 64, cut(C.cloud2, back) + cut(C.cloud, front))
+  return art(110, 64, blobs(C.cloud2, back) + blobs(C.cloud, front))
 }
 
 function heart(): Art {
@@ -96,24 +94,21 @@ function heart(): Art {
     return [50 + 2.7 * 16 * Math.sin(t) ** 3, 46 - 2.7 * (13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t))] as Pt
   })
   const small = p.map(([x, y]) => [50 + (x - 50) * 0.52, 40 + (y - 46) * 0.52] as Pt)
-  const { cut } = sheet('pr-he', 1.6, 2.4)
-  return art(100, 92, cut(C.pink, smooth(p)) + cut(C.pink2, smooth(small)))
+  return art(100, 92, cut(C.pink, smooth(p)) + tone(C.pink2, smooth(small)))
 }
 
 // ---------- treats ----------
 function carrot(): Art {
-  const { cut, line } = sheet('pr-ca', 1.4, 2.2)
   const body: Pt[] = [[34, 34], [50, 27], [66, 34], [63, 54], [57, 76], [51, 97], [46, 78], [38, 56]]
   const leaves = blob(41, 17, 5, 13, 91, -28) + blob(51, 12, 5.4, 14, 92) + blob(61, 17, 5, 13, 93, 28)
   const g =
-    cut(C.leaf2, leaves) +
+    blobs(C.leaf, leaves) +
     cut(C.carrot, smooth(body)) +
-    line(C.carrot2, 'M40 44l8 1M55 54l7-1M43 64l7 1M50 80l5-1', 2)
+    line(C.carrot2, 'M40 44l8 1M55 54l7-1M43 64l7 1M50 80l5-1', 2.6)
   return art(100, 100, `<g transform="rotate(-22 50 52)">${g}</g>`)
 }
 
 function mooncake(): Art {
-  const { cut, ink } = sheet('pr-mc', 1.6, 2.4)
   const scallop: Pt[] = Array.from({ length: 28 }, (_, i) => {
     const a = (i / 28) * Math.PI * 2
     const r = i % 2 ? 41 : 46
@@ -124,31 +119,29 @@ function mooncake(): Art {
     100,
     100,
     cut(C.cake, smooth(scallop)) +
-      cut(C.cake2, blob(50, 50, 33, 33, 101, 0, 0.025, 12)) +
-      ink(C.cake3, [0, 90, 180, 270].map(petal).join('') + circle(50, 50, 5)) +
-      ink(C.cake3, [45, 135, 225, 315].map(a => circle(50 + 22 * Math.cos((a * Math.PI) / 180), 50 + 22 * Math.sin((a * Math.PI) / 180), 2.6)).join('')),
+      cut(C.cake2, blob(50, 50, 33, 33, 101, 0, 0.025, 12), 2.6) +
+      tone(C.cake3, [0, 90, 180, 270].map(petal).join('') + circle(50, 50, 5)) +
+      tone(C.cake3, [45, 135, 225, 315].map(a => circle(50 + 22 * Math.cos((a * Math.PI) / 180), 50 + 22 * Math.sin((a * Math.PI) / 180), 2.6)).join('')),
   )
 }
 
 function lantern(): Art {
-  const { cut, line } = sheet('pr-la', 1.6, 2.4)
-  const ribs = line(C.rib, 'M50 22V76M38 24Q28 49 38 74M62 24Q72 49 62 74', 1.6)
+  const ribs = line(C.rib, 'M50 24V74M39 26Q30 49 39 72M61 26Q70 49 61 72', 2.4)
   return art(
     100,
     100,
-    line(C.ink, 'M50 0V14', 1.6) +
+    line(C.ink, 'M50 2V14', 3) +
       cut(C.gold, poly([[40, 13], [60, 13], [61, 22], [39, 22]], 111, 0.6)) +
       cut(C.red, blob(50, 49, 31, 27, 112, 0, 0.03, 12)) +
-      cut(C.red2, blob(50, 49, 17, 25, 113)) +
+      tone(C.red2, blob(50, 49, 15, 22, 113)) +
       ribs +
       cut(C.gold, poly([[41, 75], [59, 75], [58, 82], [42, 82]], 114, 0.6)) +
-      line(C.gold, 'M46 83V98M50 83V100M54 83V98', 2),
+      line(C.ink, 'M45.5 84V97M50 84V99M54.5 84V97', 6) + line(C.gold, 'M45.5 84V97M50 84V99M54.5 84V97', 2.4),
   )
 }
 
 // ---------- ground ----------
 function tree(): Art {
-  const { cut, ink } = sheet('pr-tr', 1.8, 2.6)
   return art(
     100,
     112,
@@ -157,20 +150,18 @@ function tree(): Art {
       cut('#78b3a2', blob(50, 60, 30, 15, 123, 0, 0.04, 12)) +
       cut('#93c9b4', blob(50, 40, 23, 14, 124)) +
       cut('#b2dcc8', blob(50, 22, 14, 11, 125)) +
-      ink(C.star, circle(30, 82, 2.6) + circle(66, 78, 2.6) + circle(42, 62, 2.4) + circle(62, 56, 2.2) + circle(50, 36, 2.2) + circle(52, 10, 3)),
+      tone(C.star, circle(30, 82, 2.6) + circle(66, 78, 2.6) + circle(42, 62, 2.4) + circle(62, 56, 2.2) + circle(50, 36, 2.2) + circle(52, 10, 3)),
   )
 }
 
 function grass(): Art {
-  const { cut } = sheet('pr-gr', 1.2, 1.8)
   const blade = (x: number, w: number, tx: number, ty: number): Pt[] => [[x, 70], [x + w * 0.2 + (tx - x) * 0.4, (70 + ty) / 2], [tx, ty], [x + w * 0.8 + (tx - x) * 0.45, (70 + ty) / 2 + 4], [x + w, 70]]
   const back = poly(blade(18, 16, 14, 20), 131, 1) + poly(blade(40, 16, 46, 6), 132, 1) + poly(blade(62, 16, 80, 18), 133, 1)
   const front = poly(blade(28, 16, 26, 28), 134, 1) + poly(blade(50, 16, 60, 24), 135, 1) + poly(blade(8, 14, 2, 40), 136, 1) + poly(blade(76, 14, 94, 38), 137, 1)
-  return art(100, 70, cut(C.leaf2, back) + cut(C.leaf, front))
+  return art(100, 70, blobs(C.leaf2, back, 3.6) + blobs(C.leaf, front, 3.6))
 }
 
 function flower(): Art {
-  const { cut, line } = sheet('pr-fl', 1.2, 1.8)
   const petals = [0, 72, 144, 216, 288].map((a, i) => {
     const r = (a * Math.PI) / 180
     return blob(50 + 11 * Math.cos(r - Math.PI / 2), 36 + 11 * Math.sin(r - Math.PI / 2), 9.5, 7.5, 141 + i, a + 90)
@@ -178,30 +169,29 @@ function flower(): Art {
   return art(
     100,
     100,
-    line(C.leaf2, 'M50 100Q48 72 50 44', 3.6) +
-      cut(C.leaf, blob(38, 80, 11, 4.8, 147, -35) + blob(62, 70, 11, 4.8, 148, 35)) +
-      cut(C.pink, petals.join('')) +
+    line(C.ink, 'M50 98Q48 72 50 44', 10) + line(C.leaf2, 'M50 98Q48 72 50 44', 3.6) +
+      blobs(C.leaf, blob(38, 80, 11, 4.8, 147, -35) + blob(62, 70, 11, 4.8, 148, 35)) +
+      blobs(C.pink, petals.join('')) +
       cut(C.star, blob(50, 36, 6.5, 6.5, 149)),
   )
 }
 
 function osmanthus(): Art {
-  const { cut, line } = sheet('pr-os', 1.2, 1.8)
   const bloom = (cx: number, cy: number, s: number) =>
-    [0, 90, 180, 270].map(a => blob(cx + 3.4 * s * Math.cos((a * Math.PI) / 180), cy + 3.4 * s * Math.sin((a * Math.PI) / 180), 3.4 * s, 3.4 * s, cx + a, 0, 0.06, 7)).join('')
+    [0, 90, 180, 270].map(a => circle(cx + 3.4 * s * Math.cos((a * Math.PI) / 180), cy + 3.4 * s * Math.sin((a * Math.PI) / 180), 3.3 * s)).join('')
   const spots: [number, number, number][] = [[30, 30, 1.1], [46, 20, 1], [62, 32, 1.15], [74, 18, 0.95], [52, 44, 1], [36, 50, 0.9], [68, 50, 0.9]]
   return art(
     100,
     90,
-    line(C.bark, 'M50 90Q48 64 54 44M51 64Q40 52 32 44M53 54Q64 46 70 34', 3) +
-      cut(C.leaf, blob(26, 58, 12, 5, 151, -30) + blob(76, 60, 12, 5, 152, 30) + blob(84, 34, 10, 4.4, 153, -50) + blob(16, 36, 10, 4.4, 154, 50)) +
-      cut(C.osm, spots.map(([x, y, s]) => bloom(x, y, s)).join('')) +
+    line(C.ink, 'M50 88Q48 64 54 44M51 64Q40 52 32 44M53 54Q64 46 70 34', 8) + line(C.bark, 'M50 90Q48 64 54 44M51 64Q40 52 32 44M53 54Q64 46 70 34', 3.4) +
+      blobs(C.leaf, blob(26, 58, 12, 5, 151, -30) + blob(76, 60, 12, 5, 152, 30) + blob(84, 34, 10, 4.4, 153, -50) + blob(16, 36, 10, 4.4, 154, 50)) +
+      blobs(C.osm, spots.map(([x, y, s]) => bloom(x, y, s)).join('')) +
       spots.map(([x, y]) => `<circle cx="${x}" cy="${y}" r="1.6" fill="${C.osm2}"/>`).join(''),
   )
 }
 
 const SPRITES: Record<string, Art> = {
-  head: headArt('pr-hd'),
+  head: headArt(),
   moon: moon(),
   star: star(),
   sparkle: sparkle(),
@@ -238,15 +228,15 @@ export const PAPER_RABBIT_SPEC: SkinSpec = {
   name: { zh: '剪纸月兔', en: 'Paper moon rabbit' },
   mascot: { zh: '小兔', en: 'bunny' },
   blurb: {
-    zh: '剪纸风：一层层纸山坡上坐着长耳朵小白兔，头顶一轮大月亮，飘着星星、灯笼、胡萝卜和月饼',
-    en: 'Paper-cut: a long-eared white bunny on layered paper hills under a big pale moon, with stars, lanterns, carrots and mooncakes drifting by',
+    zh: 'Q 版贴纸风：一层层剪纸山坡上坐着大眼睛长耳朵小白兔，头顶一轮大月亮，飘着星星、灯笼、胡萝卜和月饼',
+    en: 'Chibi sticker style: a big-eyed, long-eared white bunny on layered paper hills under a big pale moon, with stars, lanterns, carrots and mooncakes drifting by',
   },
   aliases: ['兔', '小兔', '兔子', 'rabbit', 'bunny', 'paper-rabbit'],
   alt: { awake: { zh: '月亮下纸山坡上的剪纸小兔', en: 'A paper-cut bunny on paper hills under the moon' }, asleep: { zh: '小兔团成一团睡着了', en: 'The bunny curled up asleep' } },
   sprites: SPRITES,
   frames: {
-    idle: [sit('pr-i0', 'calm'), sit('pr-i1', 'blink'), sit('pr-i2', 'flop'), sit('pr-i3', 'twitch')],
-    sleep: [sleep('pr-s0', false), sleep('pr-s1', true)],
+    idle: [sit('calm'), sit('blink'), sit('flop'), sit('twitch')],
+    sleep: [sleep(false), sleep(true)],
   },
   idleSteps: [[0, 3], [1, 0.16], [0, 1.6], [3, 0.14], [0, 0.12], [3, 0.14], [0, 2.2], [2, 1.4], [0, 1.8], [1, 0.16], [0, 0.14], [1, 0.16], [0, 1.4]],
   sleepSteps: [[0, 1.8], [1, 1.8]],

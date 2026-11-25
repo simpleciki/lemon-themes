@@ -1,222 +1,200 @@
-// Line-art cat: a calm little cat drawn in one dark ink line, with soft flat colour shapes set slightly
-// off the lines (peach, sage, mustard), like a risograph print. Every sprite is hand-written SVG in its
-// own box; kit/factory.ts builds the scene and the rest. Sprites have no dark mode, so each ink line
-// carries a thin off-white halo underneath and still reads on the charcoal background.
+// Peeking sticker cat: a bold black-and-white cat leaning out from behind a vertical edge, as if it
+// were peeking into the conversation. Thick solid outlines, black patches, big round eyes with white
+// highlights, an ω mouth. Props share the look: bold outline, flat fills (peach, sage, mustard).
+// Every sprite is hand-written SVG; each shape sits on a white sticker edge, so it reads on dark mode.
 
 import { makeSkin } from '../kit/factory'
 import type { Art, Frame, SkinSpec } from '../kit/factory'
 
-const INK = '#2b2b2b'
-const HALO = '#fbf7ef'
-const SW = 3 // main line
-const FW = 2.3 // face and fine detail
+const INK = '#1f1f1f'
+const EDGE = '#ffffff'
+const LW = 7 // outline
+const FW = 4 // face and fine detail
 
-// the colour shapes
 const C = {
-  peach: '#f6c9a8',
-  sage: '#bcd1b0',
-  mustard: '#e8b84a',
-  blush: '#f2b1a6',
-  sky: '#bcd6e2',
-  cream: '#f3e6cf',
+  peach: '#f6c3a0',
+  sage: '#b6cfa6',
+  mustard: '#efbf47',
+  blush: '#f3a99c',
+  sky: '#b5d3e3',
+  white: '#ffffff',
 }
 
-const ROUND = 'fill="none" stroke-linecap="round" stroke-linejoin="round"'
+const ROUND = 'stroke-linecap="round" stroke-linejoin="round"'
 
-type Dot = [number, number, number]
+type Shape = [d: string, fill: string]
+type Dot = [x: number, y: number, r: number, fill?: string]
+type Layer = { shapes?: Shape[]; lines?: string[]; fine?: string[]; dots?: Dot[]; at?: string }
 
-/** Colour shapes first, then the ink line over a halo of off-white. */
-function draw(w: number, h: number, blobs: string, lines: string[], fine: string[] = [], dots: Dot[] = []): Art {
+/** One sticker layer: a white edge under everything, then outlined fills, lines and dots. */
+function layer({ shapes = [], lines = [], fine = [], dots = [], at }: Layer): string {
+  const S = shapes.map(s => s[0]).join('')
   const L = lines.join('')
   const F = fine.join('')
-  const halo =
-    `<g ${ROUND} stroke="${HALO}">` +
-    `<path stroke-width="${SW + 3.5}" d="${L}"/>` +
-    (F === '' ? '' : `<path stroke-width="${FW + 3.5}" d="${F}"/>`) +
-    `</g>` +
-    dots.map(([x, y, r]) => `<circle cx="${x}" cy="${y}" r="${r + 2}" fill="${HALO}"/>`).join('')
+  const edge =
+    (S === '' ? '' : `<path d="${S}" fill="${EDGE}" stroke="${EDGE}" stroke-width="${LW + 7}" ${ROUND}/>`) +
+    (L === '' ? '' : `<path d="${L}" fill="none" stroke="${EDGE}" stroke-width="${LW + 7}" ${ROUND}/>`) +
+    (F === '' ? '' : `<path d="${F}" fill="none" stroke="${EDGE}" stroke-width="${FW + 6}" ${ROUND}/>`)
   const ink =
-    `<g ${ROUND} stroke="${INK}">` +
-    `<path stroke-width="${SW}" d="${L}"/>` +
-    (F === '' ? '' : `<path stroke-width="${FW}" d="${F}"/>`) +
+    `<g stroke="${INK}" ${ROUND}>` +
+    shapes.map(([d, f]) => `<path d="${d}" fill="${f}" stroke-width="${LW}"/>`).join('') +
+    (L === '' ? '' : `<path d="${L}" fill="none" stroke-width="${LW}"/>`) +
+    (F === '' ? '' : `<path d="${F}" fill="none" stroke-width="${FW}"/>`) +
     `</g>` +
-    dots.map(([x, y, r]) => `<circle cx="${x}" cy="${y}" r="${r}" fill="${INK}"/>`).join('')
-  return { w, h, body: blobs + halo + ink }
+    dots.map(([x, y, r, f]) => `<circle cx="${x}" cy="${y}" r="${r}" fill="${f ?? INK}"/>`).join('')
+  const body = edge + ink
+  return at === undefined ? body : `<g transform="${at}">${body}</g>`
 }
-const fill = (color: string, d: string, o = 1) => `<path d="${d}" fill="${color}"${o < 1 ? ` opacity="${o}"` : ''}/>`
-const disc = (color: string, x: number, y: number, r: number, o = 1) =>
-  `<circle cx="${x}" cy="${y}" r="${r}" fill="${color}"${o < 1 ? ` opacity="${o}"` : ''}/>`
+const art = (w: number, h: number, ...layers: Layer[]): Art => ({ w, h, body: layers.map(layer).join('') })
 
-// ---------- the cat (100 x 108, floor at y 104) ----------
-const CW = 100
-const CH = 108
-const HEAD = 'M36 40C31 33 32 25 35 20L37 7L47 16Q50 15.5 53 16L63 7L65 20C68 25 69 33 64 40C59 47 41 47 36 40Z'
-const BODY = [
-  HEAD,
-  'M40 46C33 58 33 80 37 104H52', // chest to the front paws
-  'M52 104C51 92 52 82 55 72', // inner foreleg
-  'M63 45C77 52 87 72 85 90C84 100 77 104 67 104H54', // back round to the haunch
-  'M67 104C62 93 66 81 76 77', // thigh
+// ---------- the cat (104 x 140, floor at y 136, the edge it peeks from at x 12) ----------
+const CW = 104
+const CH = 140
+const BAR: Layer = { lines: ['M12 4V136'] }
+const PAW = (y: number): Layer => ({
+  shapes: [[`M18 ${y}C6 ${y - 2} 0 ${y + 8} 0 ${y + 16}C0 ${y + 26} 10 ${y + 30} 20 ${y + 28}C30 ${y + 26} 32 ${y + 14} 28 ${y + 7}C25 ${y + 2} 22 ${y} 18 ${y}Z`, C.white]],
+  fine: [`M10 ${y + 4}V${y + 10}M18 ${y + 3}V${y + 9}`],
+})
+const BODY: Layer = {
+  shapes: [
+    ['M12 84C30 92 50 92 62 86C80 92 88 112 82 136H12Z', C.white],
+    ['M70 132C84 138 98 132 99 118C100 108 92 104 88 110C93 114 91 124 82 124C76 124 72 128 70 132Z', INK],
+  ],
+  fine: ['M42 136C42 122 52 114 62 116'],
+}
+// head outline runs from the edge, round the ears, back to the edge
+const HEAD = 'M12 30L20 6L38 20C48 17 58 18 66 22L88 14L86 40C92 54 90 70 80 80C68 90 36 92 12 86'
+const PATCH_L = 'M12 30L20 6L38 20C34 28 28 34 20 38C16 40 13 40 12 40Z'
+const PATCH_R = 'M66 22L88 14L86 40C88 50 86 58 82 64C78 54 72 44 68 36C66 30 66 26 66 22Z'
+const EAR_IN = 'M23 13L31 19L24 23ZM76 22L84 20L83 31Z'
+type Eyes = 'open' | 'shut'
+const head = (eyes: Eyes, at?: string): Layer[] => [
+  { shapes: [[HEAD, C.white]], at },
+  {
+    shapes: [[PATCH_L, INK], [PATCH_R, INK], [EAR_IN, C.white]],
+    fine: [
+      'M41 62L47 62L44 65Z',
+      'M36 67Q40 72 44 67Q48 72 52 67',
+      'M82 74L93 79M79 81L86 90',
+      ...(eyes === 'shut' ? ['M23 55Q30 60 37 55M51 57Q58 62 65 57'] : []),
+    ],
+    dots: eyes === 'open' ? [[30, 54, 8.5], [58, 56, 8.5], [33, 51, 3.2, C.white], [61, 53, 3.2, C.white]] : [],
+    at,
+  },
 ]
-const WHISKERS = 'M33 33L23 31M33 37L23 38M67 33L77 31M67 37L77 38'
-const NOSE = 'M48 35.5L50 37.5L52 35.5M50 37.5Q48.5 40.5 46 39.5M50 37.5Q51.5 40.5 54 39.5'
-const TAIL_DOWN = 'M84 99C94 102 98 94 96 86C95 80 89 80 89 85'
-const TAIL_UP = 'M84 96C97 91 99 72 93 61C90 55 83 57 85 63'
-const CAT_BLOBS =
-  fill(C.peach, 'M48 66C56 54 80 56 90 70C98 82 96 102 82 106C68 110 46 106 42 92C39 82 42 74 48 66Z') +
-  disc(C.sage, 37, 19, 14) +
-  disc(C.mustard, 84, 38, 5.5)
-
-const sit = (eyes: 'open' | 'shut' | 'side', tail: string): Frame => {
-  const eyeLines = eyes === 'shut' ? ['M41 29.5Q44 32 47 29.5M53 29.5Q56 32 59 29.5'] : []
-  const eyeDots: Dot[] = eyes === 'open' ? [[44, 29.5, 2.3], [56, 29.5, 2.3]] : eyes === 'side' ? [[46, 29, 2.3], [58, 29, 2.3]] : []
-  return draw(CW, CH, CAT_BLOBS, [...BODY, tail], [WHISKERS, NOSE, ...eyeLines], eyeDots)
+const peek = (eyes: Eyes, tilt = 0, pawY = 98): Frame => {
+  const at = tilt === 0 ? undefined : `rotate(${tilt} 40 100)`
+  return art(CW, CH, BODY, ...head(eyes, at), BAR, PAW(pawY))
 }
 
-// curled up asleep: one loop of body, the tail drawn round the front, head tucked in on the left
-const curl = (breath: number): Frame => {
-  const b = breath
-  return draw(
+// curled up asleep beside the edge, eyes shut, tail wrapped round the front
+const curl = (b: number): Frame =>
+  art(
     CW,
     CH,
-    fill(C.peach, `M30 ${80 - b}C50 ${68 - b} 80 ${68 - b} 92 84C100 98 92 108 76 108H26C14 106 14 90 30 ${80 - b}Z`) +
-      disc(C.sage, 22, 74, 11) +
-      disc(C.mustard, 80, 50, 5.5),
-    [
-      `M18 104C10 98 9 86 14 79L15 66L25 73Q31 71 36 72L44 64L46 76C58 ${69 - b} 76 ${67 - b} 87 ${78 - b}C96 ${88 - b * 0.5} 95 101 86 104H18`,
-      'M86 103C76 94 60 92 50 96C44 99 44 104 49 102',
-    ],
-    ['M19 86Q22 88.5 25 86M31 86Q34 88.5 37 86', 'M26.5 91L28 92.5L29.5 91'],
+    {
+      shapes: [
+        [`M18 136C14 110 34 ${92 - b} 62 ${92 - b}C86 ${92 - b} 102 108 98 126C97 133 92 136 86 136Z`, C.white],
+      ],
+    },
+    {
+      shapes: [
+        ['M18 114C16 100 22 92 26 89L27 74L40 84C46 82 52 82 56 84L69 76L67 92C71 100 69 114 60 121C49 129 24 128 18 114Z', C.white],
+        ['M26 89L27 74L40 84C37 87 33 89 29 91Z', INK],
+        ['M56 84L69 76L67 92C62 92 58 88 56 84Z', INK],
+      ],
+      fine: ['M26 106Q31 110 36 106M46 107Q51 111 56 107', 'M38 113Q41 117 44 113Q47 117 50 113'],
+      at: 'translate(18 132) scale(.8) translate(-18 -132)',
+    },
+    { shapes: [['M62 132C76 136 92 132 94 122C94 116 88 114 86 118C88 124 82 128 72 128C66 128 62 130 62 132Z', INK]] },
+    BAR,
   )
-}
 
 // ---------- props (each in a 100 x 100 box) ----------
 const SPRITES: Record<string, Art> = {
-  head: draw(
+  head: art(
     100,
-    70,
-    disc(C.sage, 34, 26, 20) + disc(C.mustard, 82, 18, 6),
-    ['M24 52C17 43 18 32 22 25L25 6L39 18Q50 16 61 18L75 6L78 25C82 32 83 43 76 52C68 63 32 63 24 52Z'],
-    ['M44 43.5L50 47.5L56 43.5M50 47.5Q47 52 43 50.5M50 47.5Q53 52 57 50.5', 'M19 40L6 37M19 46L6 48M81 40L94 37M81 46L94 48'],
-    [[40, 35, 3.2], [60, 35, 3.2]],
+    92,
+    {
+      shapes: [['M8 30L18 6L38 22C50 20 60 22 70 28L95 25L90 52C96 68 92 86 78 94C62 102 30 104 14 94C2 84 2 50 8 30Z', C.white]],
+    },
+    {
+      shapes: [
+        ['M8 30L18 6L38 22C34 32 28 40 20 46C14 50 8 52 6 52C4 44 6 36 8 30Z', INK],
+        ['M70 28L95 25L90 52C93 64 92 76 86 84C80 74 78 60 72 48C70 40 70 34 70 28Z', INK],
+        ['M20 17L29 23L21 27ZM79 32L88 31L86 43Z', C.white],
+      ],
+      fine: ['M40 71L46 71L43 74Z', 'M35 76Q39 81 43 76Q47 81 51 76'],
+      dots: [[28, 62, 9.5], [58, 65, 9.5], [31.5, 58.5, 3.6, C.white], [61.5, 61.5, 3.6, C.white]],
+    },
   ),
-  plant: draw(
+  plant: art(
     100,
     100,
-    disc(C.sage, 52, 34, 24) + fill(C.peach, 'M36 68H74L69 98H42Z'),
-    [
-      'M28 64H72',
-      'M32 64L37 96H63L68 64',
-      'M50 64C50 50 48 38 50 22',
-      'M50 46C40 45 30 37 29 26C40 27 48 35 50 46Z',
-      'M50 36C59 32 67 23 70 12C60 14 52 23 50 36Z',
-      'M50 56C60 55 70 49 75 40C64 39 54 45 50 56Z',
-    ],
+    { shapes: [['M50 64C46 48 32 44 18 46C22 60 36 66 50 64Z', C.sage], ['M50 58C54 40 68 32 84 32C80 50 66 58 50 58Z', C.sage], ['M50 50C42 36 44 20 52 8C60 22 58 38 50 50Z', C.sage]] },
+    { shapes: [['M26 64H74L68 96H32Z', C.peach]], lines: ['M24 64H76'] },
   ),
-  cup: draw(
+  cup: art(
     100,
     100,
-    disc(C.peach, 54, 66, 24) + disc(C.mustard, 30, 28, 5),
-    [
-      'M26 46H66V62C66 77 58 86 46 86C34 86 26 77 26 62Z',
-      'M66 52C79 51 80 67 66 69',
-      'M16 92H78',
-    ],
-    ['M38 38C32 30 44 25 38 15', 'M52 38C46 30 58 25 52 16'],
+    { lines: ['M68 52C82 50 84 70 68 72'] },
+    { shapes: [['M24 44H70V62C70 78 60 88 47 88C34 88 24 78 24 62Z', C.white], ['M30 50H64V60C64 70 58 76 47 76C36 76 30 70 30 60Z', C.peach]], lines: ['M14 94H82'] },
+    { fine: ['M38 32C32 24 44 20 38 10', 'M54 32C48 24 60 20 54 10'] },
   ),
-  yarn: draw(
+  yarn: art(
     100,
     100,
-    disc(C.blush, 56, 58, 28),
-    [
-      'M50 22C66 22 78 34 78 50C78 66 66 78 50 78C34 78 22 66 22 50C22 34 34 22 50 22Z',
-      'M78 70C84 80 88 90 96 90',
-    ],
-    ['M30 34C44 42 52 60 48 77', 'M42 23C58 32 70 50 68 72', 'M23 56C38 52 58 60 72 72'],
+    { lines: ['M74 74C80 84 86 92 96 90'] },
+    { shapes: [['M50 20C67 20 80 33 80 50C80 67 67 80 50 80C33 80 20 67 20 50C20 33 33 20 50 20Z', C.blush]], fine: ['M30 32C44 40 54 58 48 78', 'M42 21C58 30 70 48 68 72', 'M21 56C36 52 58 60 72 72'] },
   ),
-  book: draw(
+  book: art(
     100,
     100,
-    fill(C.sky, 'M20 34C34 28 46 30 56 36L56 86C44 80 30 80 20 84Z') + disc(C.mustard, 80, 24, 6),
-    ['M50 30C40 24 24 24 12 28V78C24 74 40 74 50 80C60 74 76 74 88 78V28C76 24 60 24 50 30Z', 'M50 30V80'],
-    ['M20 40C28 38 36 38 42 41M20 50C28 48 36 48 42 51M58 41C64 38 72 38 80 40M58 51C64 48 72 48 80 50'],
+    { shapes: [['M50 30C40 24 24 24 10 28V80C24 76 40 76 50 82C60 76 76 76 90 80V28C76 24 60 24 50 30Z', C.white], ['M50 30C40 24 24 24 10 28V80C24 76 40 76 50 82Z', C.mustard]], lines: ['M50 30V82'] },
+    { fine: ['M60 42C66 40 74 40 80 42M60 54C66 52 74 52 80 54'] },
   ),
-  fish: draw(
+  fish: art(
     100,
     100,
-    fill(C.sky, 'M22 56C34 40 60 40 74 56C60 72 34 72 22 56Z') + disc(C.mustard, 86, 30, 5),
-    ['M16 50C28 32 56 30 70 50C56 70 28 68 16 50Z', 'M70 50L88 37C84 45 84 55 88 63Z'],
-    ['M42 39C46 45 46 55 42 61'],
-    [[30, 47, 2.6]],
+    { shapes: [['M70 50L90 34C86 44 86 56 90 66Z', C.sky], ['M12 50C26 30 56 28 72 50C56 72 26 70 12 50Z', C.sky]], fine: ['M42 38C47 44 47 56 42 62'], dots: [[28, 47, 4.5]] },
   ),
-  sprig: draw(
+  sprig: art(
     100,
     100,
-    disc(C.sage, 46, 54, 24) + disc(C.mustard, 54, 14, 6),
-    [
-      'M50 98C47 78 52 56 50 26',
-      'M50 76C40 76 32 70 30 62C40 61 48 66 50 76Z',
-      'M50 62C60 62 68 56 70 48C60 47 52 52 50 62Z',
-      'M50 46C41 46 35 40 34 33C43 33 49 38 50 46Z',
-    ],
+    { lines: ['M50 98C46 78 52 56 50 24'] },
+    { shapes: [['M50 78C38 78 28 70 26 60C38 58 48 66 50 78Z', C.sage], ['M50 60C62 60 72 52 74 42C62 40 52 48 50 60Z', C.sage], ['M50 40C42 34 40 22 46 12C54 20 56 32 50 40Z', C.sage]] },
   ),
-  bloom: draw(
+  bloom: art(
     100,
     100,
-    disc(C.blush, 54, 40, 22) + disc(C.sage, 36, 84, 9),
-    [
-      'M50 98C50 80 49 66 50 52',
-      'M50 80C42 80 36 76 34 70C42 69 48 73 50 80Z',
-      'M50 40C40 34 38 18 50 16C62 18 60 34 50 40C56 30 72 30 72 42C70 52 56 48 50 40C56 50 50 64 40 60C32 54 42 44 50 40C40 46 28 40 30 30C34 20 46 30 50 40Z',
-    ],
-    [],
-    [[50, 40, 3.2]],
+    { lines: ['M50 98V60'] },
+    {
+      shapes: [
+        ['M50 40C40 30 40 12 50 10C60 12 60 30 50 40C60 30 78 32 76 44C74 54 58 50 50 40C58 50 54 66 44 64C34 60 42 46 50 40C40 46 24 42 26 30C30 20 44 28 50 40Z', C.white],
+        ['M50 32C55 32 58 36 58 40C58 45 55 48 50 48C45 48 42 45 42 40C42 36 45 32 50 32Z', C.mustard],
+      ],
+    },
   ),
-  bush: draw(
+  bush: art(100, 100, { shapes: [['M16 88C6 74 16 56 30 60C30 42 52 36 60 50C68 38 92 44 88 62C98 66 98 88 86 88Z', C.sage]], fine: ['M46 86C48 76 54 70 60 68'] }),
+  sun: art(
     100,
     100,
-    fill(C.sage, 'M20 86C12 72 22 58 34 62C34 46 54 40 62 52C70 42 90 48 86 64C96 68 94 88 84 90Z') + disc(C.mustard, 72, 30, 5),
-    ['M14 82C8 68 18 54 30 58C30 42 50 36 58 48C66 36 88 42 84 60C94 62 94 82 84 84Z', 'M8 94H92'],
-    ['M44 84C46 74 52 68 58 66'],
+    { fine: ['M50 6V16M50 84V94M6 50H16M84 50H94M19 19L26 26M74 74L81 81M81 19L74 26M26 74L19 81'] },
+    { shapes: [['M50 28C62 28 72 38 72 50C72 62 62 72 50 72C38 72 28 62 28 50C28 38 38 28 50 28Z', C.mustard]] },
   ),
-  sun: draw(
-    100,
-    100,
-    disc(C.mustard, 55, 55, 21),
-    ['M50 32C60 32 68 40 68 50C68 60 60 68 50 68C40 68 32 60 32 50C32 40 40 32 50 32Z'],
-    ['M50 10V20M50 80V90M10 50H20M80 50H90M22 22L29 29M71 71L78 78M78 22L71 29M29 71L22 78'],
-  ),
-  heart: draw(
-    100,
-    100,
-    fill(C.blush, 'M55 86C35 70 23 58 23 44C23 32 33 26 41 26C49 26 53 32 55 38C57 32 61 26 69 26C77 26 87 32 87 44C87 58 75 70 55 86Z'),
-    ['M50 80C30 64 18 52 18 38C18 26 28 20 36 20C44 20 48 26 50 32C52 26 56 20 64 20C72 20 82 26 82 38C82 52 70 64 50 80Z'],
-  ),
-  sparkle: draw(
-    100,
-    100,
-    fill(C.mustard, 'M55 20C58 44 64 50 88 54C64 58 58 64 55 88C52 64 46 58 22 54C46 50 52 44 55 20Z'),
-    ['M50 14C53 40 60 47 86 50C60 53 53 60 50 86C47 60 40 53 14 50C40 47 47 40 50 14Z'],
-  ),
-  plane: draw(
-    100,
-    100,
-    fill(C.sky, 'M18 58L90 30L68 86L52 64Z') + disc(C.peach, 22, 26, 7),
-    ['M12 52L88 22L64 82L48 58Z', 'M88 22L48 58V78L58 68'],
-    ['M10 84C18 80 24 84 32 80'],
-  ),
-  cloud: draw(
-    100,
-    70,
-    fill(C.cream, 'M24 60C12 60 12 44 26 44C26 30 46 26 52 38C58 26 80 30 78 46C90 46 92 60 80 60Z'),
-    ['M20 54C8 54 8 38 22 38C22 24 42 20 48 32C54 20 76 24 74 40C86 40 88 54 76 54Z'],
-  ),
+  heart: art(100, 100, {
+    shapes: [['M50 84C28 68 14 54 14 38C14 25 25 18 34 18C42 18 47 24 50 30C53 24 58 18 66 18C75 18 86 25 86 38C86 54 72 68 50 84Z', C.blush]],
+    dots: [[32, 34, 4.5, C.white]],
+  }),
+  sparkle: art(100, 100, { shapes: [['M50 10C54 38 62 46 90 50C62 54 54 62 50 90C46 62 38 54 10 50C38 46 46 38 50 10Z', C.mustard]] }),
+  plane: art(100, 100, { shapes: [['M10 52L90 20L64 84L48 60Z', C.white], ['M90 20L48 60V80L58 70Z', C.sky]] }),
+  cloud: art(100, 64, { shapes: [['M22 54C8 54 8 34 24 34C24 18 46 12 52 28C60 14 84 20 80 38C94 38 96 54 82 54Z', C.white]] }),
 }
 
 // soft ground: a pale blob, with one ink line drawn across it and a few dots
 const GROUND = 'M0 1004V952C60 930 140 942 210 934C290 926 350 938 400 948V1004Z'
 const DETAIL =
-  `<path d="M24 960C110 948 190 956 260 950C310 946 350 952 378 958" fill="none" stroke="#9a8f80" stroke-width="3" stroke-linecap="round" opacity=".7"/>` +
+  `<path d="M24 960C110 948 190 956 260 950C310 946 350 952 378 958" fill="none" stroke="#1f1f1f" stroke-width="4" stroke-linecap="round" opacity=".7"/>` +
   `<circle cx="70" cy="980" r="5" fill="${C.mustard}" opacity=".8"/><circle cx="330" cy="984" r="4" fill="${C.sage}"/><circle cx="200" cy="990" r="3" fill="#9a8f80" opacity=".6"/>`
 const BACK = (a: number, b: number) =>
   `<circle cx="${a}" cy="230" r="96" fill="${C.peach}" opacity=".32"/>` +
@@ -227,19 +205,19 @@ export const LINE_CAT_SPEC: SkinSpec = {
   name: { zh: '线条小猫', en: 'Line-art cat' },
   mascot: { zh: '小猫', en: 'cat' },
   blurb: {
-    zh: '极简线条：一笔墨线画的小猫，身后衬着蜜桃、鼠尾草绿和芥末黄的色块，安静又透气',
-    en: 'Minimal line art: a cat drawn in one ink line over soft peach, sage and mustard shapes, calm and airy',
+    zh: '粗线条黑白小猫：从边框后面探出头来偷看你的对话，大眼睛、ω 嘴，道具配蜜桃、鼠尾草绿和芥末黄',
+    en: 'Bold black-and-white sticker cat peeking out from behind an edge, big eyes and an ω mouth, with peach, sage and mustard props',
   },
   aliases: ['线条猫', '线条', 'line', 'line-cat', 'lineart'],
-  alt: { awake: { zh: '一笔画成的线条小猫', en: 'A cat drawn in a single ink line' }, asleep: { zh: '线条小猫团成一圈睡着了', en: 'The line-art cat curled up asleep' } },
+  alt: { awake: { zh: '从边框后面探头偷看的黑白小猫', en: 'A black-and-white cat peeking out from behind an edge' }, asleep: { zh: '小猫在边框旁边团成一团睡着了', en: 'The cat curled up asleep beside the edge' } },
   sprites: SPRITES,
   frames: {
-    idle: [sit('open', TAIL_DOWN), sit('shut', TAIL_DOWN), sit('side', TAIL_UP)],
-    sleep: [curl(0), curl(2.5)],
+    idle: [peek('open'), peek('shut'), peek('open', 9, 84)],
+    sleep: [curl(0), curl(3)],
   },
   idleSteps: [[0, 3.2], [1, 0.18], [0, 2], [2, 1.6], [0, 2.4], [1, 0.18], [0, 1.6]],
   sleepSteps: [[0, 2], [1, 2]],
-  mascotHeight: 170,
+  mascotHeight: 210,
   mascotAt: { x: 285, y: 948 },
   world: {
     bg: '#f7f2e9',
@@ -261,7 +239,7 @@ export const LINE_CAT_SPEC: SkinSpec = {
   burst: ['heart', 'sparkle', 'fish', 'yarn', 'sun', 'heart', 'plane', 'sprig'],
   pops: ['heart', 'sparkle', 'fish', 'sun', 'yarn'],
   heart: 'heart',
-  snore: '#8a8075',
+  snore: '#1f1f1f',
   icons: { mascot: 'head', think: 'sparkle', token: 'yarn', agents: 'plane', coin: 'fish' },
   drink: '#c9a27a',
   ink: INK,
@@ -269,9 +247,9 @@ export const LINE_CAT_SPEC: SkinSpec = {
   accent: '#c9744f',
   userStickers: ['heart', 'fish', 'sparkle', 'cup'],
   reply: 'yarn',
-  stickerAlt: { zh: '线条小贴纸', en: 'Line-art sticker' },
+  stickerAlt: { zh: '黑白小贴纸', en: 'Bold sticker' },
   replyAlt: { zh: '毛线团贴纸', en: 'Yarn ball sticker' },
-  garden: { flower: 'sprig', bush: 'bush', landmark: 'plant', bloom: 'bloom', ink: '#6f6658' },
+  garden: { flower: 'sprig', bush: 'bush', landmark: 'plant', bloom: 'bloom', ink: '#1f1f1f' },
   colors: {
     accent: '#c9744f',
     heading: '#a95d3c',

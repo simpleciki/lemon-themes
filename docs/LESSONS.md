@@ -129,3 +129,6 @@ Each line is something we tried, saw fail in the app, and fixed. Check them agai
   (flat head, two nostrils) did not read as a cat.
 - **Sprites have no dark mode of their own**: colours inside a sprite stay as drawn. A line drawing gets a
   pale halo under its ink so it still reads on a dark background.
+- **One very long tag gets the whole backdrop refused** ("an Svg holds a tag that is not plain"): a single
+  `<path>` of about 6,000 characters did it (the exact cap is unknown). Split long shapes into several
+  tags or simpler shapes.
