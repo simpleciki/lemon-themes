@@ -165,6 +165,7 @@ def main():
     ap.add_argument('--frames', type=int, default=3)
     ap.add_argument('--merge', type=int, default=50)
     ap.add_argument('--fill', default='', help='colour>into:most, e.g. e47c24>ffffff:8 (by nearest palette colour)')
+    ap.add_argument('--mirror', action='store_true', help='make every frame exactly symmetric: the right half copies the left')
     ap.add_argument('--ts', action='store_true', help='write an exportable TypeScript module')
     ap.add_argument('--recolor', default='', help='comma list old=new hex colours, e.g. f2d9c0=ffffff')
     args = ap.parse_args()
@@ -215,6 +216,10 @@ def main():
             # every palette colour close to the target counts as the target (two near-whites, say)
             like = {LETTERS[i] for i, c in enumerate(pal) if sum((a - b) ** 2 for a, b in zip(c, hexc(dst))) ** 0.5 < 24}
             grid = fill_islands(grid, LETTERS[nearest(hexc(src), pal)], into, int(most), like)
+        if args.mirror:
+            w = max(len(r) for r in grid)
+            grid = [r.ljust(w, '.') for r in grid]
+            grid = [r[: (w + 1) // 2] + r[: w // 2][::-1] for r in grid]
         grids.append(grid)
     for n, grid in enumerate(grids):
         print(f'{ex}const FRAME_{n} = [')
