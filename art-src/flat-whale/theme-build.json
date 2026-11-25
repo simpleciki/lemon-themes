@@ -1,0 +1,25 @@
+{
+  "theme": "flat-whale",
+  "out": "plugins/lemon-themes/hooks/skins/flat-whale/traced",
+  "sheets": {
+    "seq": {
+      "file": "seq-whale.png",
+      "alpha_cut": 200
+    }
+  },
+  "sprites": {},
+  "sequences": {
+    "all": {
+      "sheet": "seq",
+      "keep": [
+        0,
+        1,
+        2
+      ],
+      "scale": 0.42,
+      "colors": 10,
+      "speck": 3,
+      "median": 1
+    }
+  }
+}

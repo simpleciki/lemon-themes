@@ -132,3 +132,16 @@ Each line is something we tried, saw fail in the app, and fixed. Check them agai
 - **One very long tag gets the whole backdrop refused** ("an Svg holds a tag that is not plain"): a single
   `<path>` of about 6,000 characters did it (the exact cap is unknown). Split long shapes into several
   tags or simpler shapes.
+
+## Mascots: draw in Codex, copy exactly (November 2026)
+
+- **Hand-written mascots looked wobbly** (Ciki: "每个小动物看上去都歪歪扭扭"): curves written blind, each part
+  outlined on its own. What worked: Codex draws the character from a style reference (a NEW character in
+  that style, never a copy of the reference, which is often a stock picture), then the code copies Codex's
+  picture exactly.
+- **Pixel art is copied cell by cell** with `tools/pixel_from_png.py`: it finds the square size (of the sizes
+  that fit about as well as the best, the biggest, since a 2x2 block fits like one pixel), reads the most
+  common colour in each square, merges near-identical colours, can recolour (`--recolor`) and fill small
+  patterns away (`--fill`). Codex's pixel art is not on a perfect grid, so expect a stray cell or two.
+- **Line and flat art is traced** with `tools/build_theme.py` at scale ~0.42 (0.22 lost the faces); a
+  silhouette with a soft grey halo traces cleanly with `colors: 2`, `median: 5`, `alpha_cut: 240`.

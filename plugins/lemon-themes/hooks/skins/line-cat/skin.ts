@@ -200,24 +200,35 @@ const BACK = (a: number, b: number) =>
   `<circle cx="${a}" cy="230" r="96" fill="${C.peach}" opacity=".32"/>` +
   `<path d="M${b - 80} 640C${b - 60} 580 ${b + 40} 570 ${b + 70} 620C${b + 100} 680 ${b + 20} 730 ${b - 40} 710C${b - 90} 694 ${b - 96} 668 ${b - 80} 640Z" fill="${C.sage}" opacity=".26"/>`
 
+
+import { FRAMES as TRACED } from './traced/frames'
+
+// the mascot is traced from the Codex sheet in art-src (tools/build_theme.py): [0] calm, [1] blink,
+// [2] asleep; asleep breathes by rising a little on the second frame
+const T = TRACED.all ?? []
+const T0 = T[0]!
+const T1 = T[1]!
+const T2 = T[2]!
+const T2b = { ...T2, dy: T2.dy - 1.5 }
+const topOf = (f: typeof T0, part: number) => ({ w: f.w, h: Math.round(f.h * part), body: f.body })
+
+
 export const LINE_CAT_SPEC: SkinSpec = {
   id: 'line-cat',
-  name: { zh: '线条小猫', en: 'Line-art cat' },
+  name: { zh: '小黑猫', en: 'Little black cat' },
   mascot: { zh: '小猫', en: 'cat' },
   blurb: {
-    zh: '粗线条黑白小猫：从边框后面探出头来偷看你的对话，大眼睛、ω 嘴，道具配蜜桃、鼠尾草绿和芥末黄',
-    en: 'Bold black-and-white sticker cat peeking out from behind an edge, big eyes and an ω mouth, with peach, sage and mustard props',
+    zh: '圆润的小黑猫剪影：白圈大眼睛、爱心小鼻子，道具配蜜桃、鼠尾草绿和芥末黄',
+    en: 'A smooth little black cat silhouette with white-ring eyes and a heart nose, with peach, sage and mustard props',
   },
-  aliases: ['线条猫', '线条', 'line', 'line-cat', 'lineart'],
-  alt: { awake: { zh: '从边框后面探头偷看的黑白小猫', en: 'A black-and-white cat peeking out from behind an edge' }, asleep: { zh: '小猫在边框旁边团成一团睡着了', en: 'The cat curled up asleep beside the edge' } },
-  sprites: SPRITES,
-  frames: {
-    idle: [peek('open'), peek('shut'), peek('open', 9, 84)],
-    sleep: [curl(0), curl(3)],
-  },
-  idleSteps: [[0, 3.2], [1, 0.18], [0, 2], [2, 1.6], [0, 2.4], [1, 0.18], [0, 1.6]],
+  aliases: ['黑猫', '小黑猫', '线条猫', 'black', 'line-cat'],
+  alt: { awake: { zh: '圆眼睛的小黑猫坐着看你', en: 'A little black cat with round eyes sitting and watching you' }, asleep: { zh: '小黑猫闭着眼睛打盹', en: 'The little black cat dozing with its eyes shut' } },
+  // the band's head icon: the black cat's head (its box crops the body away)
+  sprites: { ...SPRITES, catHead: topOf(T0, 0.6) },
+  frames: { idle: [T0, T1], sleep: [T2, T2b] },
+  idleSteps: [[0, 3.2], [1, 0.18], [0, 2.6], [1, 0.18], [0, 0.4], [1, 0.18], [0, 2]],
   sleepSteps: [[0, 2], [1, 2]],
-  mascotHeight: 210,
+  mascotHeight: 175,
   mascotAt: { x: 285, y: 948 },
   world: {
     bg: '#f7f2e9',
@@ -240,7 +251,7 @@ export const LINE_CAT_SPEC: SkinSpec = {
   pops: ['heart', 'sparkle', 'fish', 'sun', 'yarn'],
   heart: 'heart',
   snore: '#1f1f1f',
-  icons: { mascot: 'head', think: 'sparkle', token: 'yarn', agents: 'plane', coin: 'fish' },
+  icons: { mascot: 'catHead', think: 'sparkle', token: 'yarn', agents: 'plane', coin: 'fish' },
   drink: '#c9a27a',
   ink: INK,
   paper: '#fffdf8',

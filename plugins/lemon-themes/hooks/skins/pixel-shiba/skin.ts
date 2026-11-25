@@ -6,6 +6,12 @@
 import { makeSkin } from '../kit/factory'
 import type { Art, Frame, SkinSpec } from '../kit/factory'
 import { pixels, sticker } from '../kit/pixel'
+import { FRAMES, PAL } from './mascot'
+
+// the mascot is copied cell by cell from the Codex sheet in art-src (tools/pixel_from_png.py);
+// sleeping breathes by standing one row taller
+const MF = (grid: string[]) => pixels(grid, PAL)
+const breathe = (grid: string[]) => [grid[0]!, ...grid]
 
 // one palette for the whole skin, so every sprite shares its colours
 const P = {
@@ -201,9 +207,10 @@ export const PIXEL_SHIBA_SPEC: SkinSpec = {
   aliases: ['柴犬', '小柴', 'shiba', 'dog', 'pixel-shiba'],
   alt: { awake: { zh: '街角人行道上的像素小柴犬', en: 'A pixel shiba on a street-corner sidewalk' }, asleep: { zh: '小柴犬蜷成一团睡着了', en: 'The shiba curled up asleep' } },
   crisp: true,
-  sprites: SPRITES,
-  frames: { idle: [frame(SIT), frame(BLINK), frame(WAG)], sleep: [frame(SLEEP_A), frame(SLEEP_B)] },
-  idleSteps: [[0, 3], [1, 0.16], [0, 1.6], [2, 0.45], [0, 0.35], [2, 0.45], [0, 2.4], [1, 0.16], [0, 1.4]],
+  // the band's head icon: the top of the copied mascot
+  sprites: { ...SPRITES, head: pixels(FRAMES[0]!.slice(0, Math.round(FRAMES[0]!.length * 0.62)), PAL) },
+  frames: { idle: [MF(FRAMES[0]!), MF(FRAMES[1]!)], sleep: [MF(FRAMES[2]!), MF(breathe(FRAMES[2]!))] },
+  idleSteps: [[0, 3.2], [1, 0.18], [0, 2.6], [1, 0.18], [0, 0.4], [1, 0.18], [0, 2]],
   mascotHeight: 160,
   mascotAt: { x: 285, y: 922 },
   world: {

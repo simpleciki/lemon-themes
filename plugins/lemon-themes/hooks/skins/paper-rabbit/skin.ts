@@ -9,6 +9,17 @@ import { arc, blob, circle, poly, rot, sheet, smooth } from './paper'
 import type { Pt } from './paper'
 import { headArt, sit, sleep } from './rabbit'
 
+import { FRAMES as TRACED } from './traced/frames'
+
+// the mascot is traced from the Codex sheet in art-src (tools/build_theme.py): [0] calm, [1] blink,
+// [2] asleep; asleep breathes by rising a little on the second frame
+const T = TRACED.all ?? []
+const T0 = T[0]!
+const T1 = T[1]!
+const T2 = T[2]!
+const T2b = { ...T2, dy: T2.dy - 1.5 }
+const topOf = (f: typeof T0, part: number) => ({ w: f.w, h: Math.round(f.h * part), body: f.body })
+
 const { cut, blobs, tone, line } = sheet(4.5)
 
 const C = {
@@ -233,12 +244,9 @@ export const PAPER_RABBIT_SPEC: SkinSpec = {
   },
   aliases: ['兔', '小兔', '兔子', 'rabbit', 'bunny', 'paper-rabbit'],
   alt: { awake: { zh: '月亮下纸山坡上的剪纸小兔', en: 'A paper-cut bunny on paper hills under the moon' }, asleep: { zh: '小兔团成一团睡着了', en: 'The bunny curled up asleep' } },
-  sprites: SPRITES,
-  frames: {
-    idle: [sit('calm'), sit('blink'), sit('flop'), sit('twitch')],
-    sleep: [sleep(false), sleep(true)],
-  },
-  idleSteps: [[0, 3], [1, 0.16], [0, 1.6], [3, 0.14], [0, 0.12], [3, 0.14], [0, 2.2], [2, 1.4], [0, 1.8], [1, 0.16], [0, 0.14], [1, 0.16], [0, 1.4]],
+  sprites: { ...SPRITES, head: topOf(T0, 0.62) },
+  frames: { idle: [T0, T1], sleep: [T2, T2b] },
+  idleSteps: [[0, 3.2], [1, 0.18], [0, 2.6], [1, 0.18], [0, 0.4], [1, 0.18], [0, 2]],
   sleepSteps: [[0, 1.8], [1, 1.8]],
   mascotHeight: 168,
   mascotAt: { x: 285, y: 914 },

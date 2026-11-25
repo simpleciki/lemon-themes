@@ -6,6 +6,17 @@
 import { makeSkin } from '../kit/factory'
 import type { Art, Frame, SkinSpec } from '../kit/factory'
 
+import { FRAMES as TRACED } from './traced/frames'
+
+// the mascot is traced from the Codex sheet in art-src (tools/build_theme.py): [0] calm, [1] blink,
+// [2] asleep; asleep breathes by rising a little on the second frame
+const T = TRACED.all ?? []
+const T0 = T[0]!
+const T1 = T[1]!
+const T2 = T[2]!
+const T2b = { ...T2, dy: T2.dy - 1.5 }
+const topOf = (f: typeof T0, part: number) => ({ w: f.w, h: Math.round(f.h * part), body: f.body })
+
 // one palette for the whole skin, so every sprite shares its colours
 const C = {
   ink: '#1f3550',
@@ -256,14 +267,11 @@ export const FLAT_WHALE_SPEC: SkinSpec = {
   },
   aliases: ['鲸鱼', '小鲸鱼', 'whale', 'flat-whale'],
   alt: { awake: { zh: '浅海沙地上的扁平小鲸鱼', en: 'A flat little whale on the sandy sea floor' }, asleep: { zh: '小鲸鱼闭着眼睛吐泡泡睡着了', en: 'The little whale asleep, blowing bubbles' } },
-  sprites: SPRITES,
-  frames: {
-    idle: [frame({ eyes: 'open' }), frame({ eyes: 'blink' }), frame({ eyes: 'open', spout: true, tail: -10 })],
-    sleep: [frame({ eyes: 'sleep', tail: 12, bubble: 1 }), frame({ eyes: 'sleep', tail: 12, bubble: 2, breathe: true })],
-  },
-  idleSteps: [[0, 3], [1, 0.16], [0, 2], [2, 1.2], [0, 2.6], [1, 0.16], [0, 0.3], [1, 0.16], [0, 1.6]],
+  sprites: { ...SPRITES, whale: T0 },
+  frames: { idle: [T0, T1], sleep: [T2, T2b] },
+  idleSteps: [[0, 3.2], [1, 0.18], [0, 2.6], [1, 0.18], [0, 0.4], [1, 0.18], [0, 2]],
   sleepSteps: [[0, 1.9], [1, 1.9]],
-  mascotHeight: 122,
+  mascotHeight: 150,
   mascotAt: { x: 282, y: 926 },
   world: {
     bg: '#def4f3',

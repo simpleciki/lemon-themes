@@ -6,6 +6,12 @@
 import { makeSkin } from '../kit/factory'
 import type { Art, Frame, SkinSpec } from '../kit/factory'
 import { pixels, sticker } from '../kit/pixel'
+import { FRAMES, PAL } from './mascot'
+
+// the mascot is copied cell by cell from the Codex sheet in art-src (tools/pixel_from_png.py);
+// sleeping breathes by standing one row taller
+const MF = (grid: string[]) => pixels(grid, PAL)
+const breathe = (grid: string[]) => [grid[0]!, ...grid]
 
 // one palette for the whole skin, so every sprite shares its colours
 const P = {
@@ -220,9 +226,10 @@ export const PIXEL_FOX_SPEC: SkinSpec = {
   aliases: ['狐狸', '小狐狸', 'fox', 'pixel-fox'],
   alt: { awake: { zh: '森林青苔上的像素小狐狸', en: 'A pixel fox on a mossy forest floor' }, asleep: { zh: '小狐狸蜷着大尾巴睡着了', en: 'The fox curled up in its tail, asleep' } },
   crisp: true,
-  sprites: SPRITES,
-  frames: { idle: [frame(SIT), frame(BLINK), frame(EAR), frame(SWISH)], sleep: [frame(SLEEP_A), frame(SLEEP_B)] },
-  idleSteps: [[0, 3], [1, 0.16], [0, 1.6], [3, 0.5], [0, 0.4], [3, 0.5], [0, 2], [2, 0.3], [0, 1.2], [1, 0.16], [0, 1.4]],
+  // the band's head icon: the top of the copied mascot
+  sprites: { ...SPRITES, head: pixels(FRAMES[0]!.slice(0, Math.round(FRAMES[0]!.length * 0.62)), PAL) },
+  frames: { idle: [MF(FRAMES[0]!), MF(FRAMES[1]!)], sleep: [MF(FRAMES[2]!), MF(breathe(FRAMES[2]!))] },
+  idleSteps: [[0, 3.2], [1, 0.18], [0, 2.6], [1, 0.18], [0, 0.4], [1, 0.18], [0, 2]],
   mascotHeight: 150,
   mascotAt: { x: 285, y: 920 },
   world: {

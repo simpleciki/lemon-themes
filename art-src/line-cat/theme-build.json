@@ -1,0 +1,25 @@
+{
+  "theme": "line-cat",
+  "out": "plugins/lemon-themes/hooks/skins/line-cat/traced",
+  "sheets": {
+    "seq": {
+      "file": "seq-black.png",
+      "alpha_cut": 240
+    }
+  },
+  "sprites": {},
+  "sequences": {
+    "all": {
+      "sheet": "seq",
+      "keep": [
+        0,
+        1,
+        2
+      ],
+      "scale": 0.42,
+      "colors": 2,
+      "speck": 8,
+      "median": 5
+    }
+  }
+}
