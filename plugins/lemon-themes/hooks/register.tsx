@@ -19,6 +19,7 @@ import {
   stillSvg,
   totalTokens,
 } from './format'
+import { cardFacts, cardSvg, cardText } from './card'
 import { EMPTY_GARDEN, GARDEN_KEY, SVG_LIMIT, gardenLayer, localDay, overlay, parseGarden, plant, storedGarden, totals } from './garden'
 import { WORDS, langFromEnv, pick } from './i18n'
 import type { Lang, Words } from './i18n'
@@ -62,6 +63,7 @@ const POKE_MS: Record<Poke['what'], number> = { mascot: 3600, party: 3600, pop: 
 const NAP_AFTER_MS = 10 * 60 * 1000
 const USAGE = 'lemon-themes-usage'
 const SKIN_PANE = 'lemon-themes-skins'
+const CARD = 'lemon-themes-card'
 // Assumed exchange rate for the CNY line; shown on the pane as an assumption.
 const USD_TO_CNY = 7.1
 const SCENES = new Set(SKINS.map(s => s.id))
@@ -332,6 +334,10 @@ export const register: Register = on => {
       await update($, isBandHidden, () => false)
       await $.ui.open({ id: USAGE, title: w.usageTitle(pick(s.mascot, lg)) })
       return { text: w.usageOpened }
+    }
+    if (/^(share|card|小结|分享|卡片)/i.test(arg)) {
+      await $.ui.open({ id: CARD, title: w.cardTitle })
+      return { text: w.cardOpened }
     }
     if (/yay|撒花|庆祝/.test(arg)) {
       await celebrate($, 'yay')
@@ -680,6 +686,37 @@ export const register: Register = on => {
         </Box>
         <Text dimColor size="footnote">
           {w.footer}
+        </Text>
+      </Box>
+    )
+  })
+
+  // /skin share: today's card, to screenshot and post, with its text one press from the clipboard.
+  on('ui.render', { component: 'Pane', requestId: CARD }, async ($, e) => {
+    const ui = $.ui.resolve(e)
+    const { Box, Text, Button } = ui
+    const { s, lg, w } = await current($)
+    const g = await read($, garden)
+    if (!g.ok) {
+      return <Text color="danger">{g.why === 'write' ? w.gardenUnwritable : w.gardenUnreadable}</Text>
+    }
+    const now = await $.clock.now()
+    const f = cardFacts(g, localDay(now))
+    const words = cardText(f, lg)
+    const isRich = (e.surface === 'desktop' || e.surface === 'mobile') && 'Svg' in ui
+    const look = { name: pick(s.name, lg), badge: s.badge, kit: s.garden(await lookOf($, s)), heading: s.ink.heading, border: s.ink.border }
+
+    return (
+      <Box flexDirection="column" gap={1}>
+        {isRich ? <ui.Svg source={stillSvg(cardSvg(f, look, lg))} alt={words} width={640} height={360} /> : <Text>{words}</Text>}
+        <Box flexDirection="row" gap={1} alignItems="center">
+          <Button key="copy" label={w.cardCopy} onPress={async () => {
+            const r = await $.ui.copy({ text: words, surface: e.surface })
+            $.ui.toast(r.isCopied ? w.cardCopied : w.cardNotCopied)
+          }} />
+        </Box>
+        <Text dimColor size="footnote">
+          {w.cardHow}
         </Text>
       </Box>
     )

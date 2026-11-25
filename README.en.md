@@ -113,6 +113,7 @@ Type `/skin` (or press 皮肤 on the usage band) to open the pane:
 <img src="assets/pond-duck/garden-en.svg" alt="The left bank full of flowers, labelled 🌼 137 · meadow 2; the duckling says 👋 your turn" width="100%">
 
 - **The mascot talks**: it says hello when you open the app, remembers how many days in a row you have met or how long you were away, and speaks up at the first flower, every 10th and 100th, late at night, and after three failures in a row ("No rush"). At most one ordinary line every 10 minutes.
+- **Today's card**: `/skin share` opens a card of today: flowers planted, green runs, days in a row, the garden's total, with the mascot. Take a screenshot to post it; Copy text copies a caption. The card holds counts only, none of your code or file names.
 - **Status bubble**: "…" while Claude thinks or runs a tool, "👋 your turn" while it waits for your approval or your answer, "!" when a tool fails.
 - **It remembers** your choices across sessions.
 - Commands: `/skin 小羊` or `/skin meadow-sheep`, `/skin 小熊` or `/skin lemon-bear`, `/skin duck` or `/skin pond-duck` (then `/skin dusk`, `/skin rain`, `/skin auto` for its look), `/skin usage` for the usage pane, `/skin nap` to put the mascot to sleep.

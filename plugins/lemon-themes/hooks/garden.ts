@@ -93,6 +93,8 @@ export type GardenKit = {
   bloom: string
   /** A sprite's size, to stand it on the ground by its foot. */
   size: (name: string) => { w: number; h: number }
+  /** A sprite's definition (`<g id="s-name">…</g>`), for drawings outside the backdrop. */
+  def: (name: string) => string
   /** Text colour on the bank. */
   ink: string
   /** A skin with no ground of its own (the bear's gingham) gets a low mound in this colour. */

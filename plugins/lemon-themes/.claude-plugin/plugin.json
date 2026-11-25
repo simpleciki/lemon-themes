@@ -1,6 +1,6 @@
 {
   "name": "lemon-themes",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "Storybook sticker skins for the desktop app (lemon bear, meadow lamb), switched and tuned from /skin, with a usage band and pane.",
   "types": "./types/index.d.ts"
 }

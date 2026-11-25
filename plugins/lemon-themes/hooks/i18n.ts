@@ -26,7 +26,7 @@ const zh = {
   lookAuto: '跟着时间',
   lookSet: (name: string) => `已固定为「${name}」。`,
   lookAutoSet: '样子跟着时间走：白天池塘，傍晚 6 点后萤火虫，偶尔下雨。',
-  footer: '设置会记住，下次打开 App 还在。命令：/skin 小羊、/skin 小熊、/skin usage、/skin nap。',
+  footer: '设置会记住，下次打开 App 还在。命令：/skin 小羊、/skin 小熊、/skin 小鸭、/skin share（今日小结）、/skin usage、/skin nap。',
   commandHelp: '换皮肤、开关动画和特效（Lemon Themes）',
   usageOpened: '用量面板已打开。',
   paneOpened: '皮肤面板已打开：选皮肤，或者关掉不想要的动画和特效。',
@@ -82,6 +82,12 @@ const zh = {
   gardenUnreadable: '读不到花园记录。这次先不记、不画，免得盖掉你以前种的花。',
   gardenUnwritable: '花园记录存不进去，这次的花没有记下。',
   gardenLocal: '只存在你自己的电脑上（每天一行小结）。',
+  cardTitle: '今日小结',
+  cardOpened: '今日小结已打开：截个图就能发，文字点「复制文字」。',
+  cardCopy: '复制文字',
+  cardCopied: '已复制，可以直接粘贴发出去。',
+  cardNotCopied: '没能复制到剪贴板，可以手动选中卡片下面的字。',
+  cardHow: '想发图：截个图（Mac 上按 ⌘⇧4 框选卡片）。卡片里只有今天的花和总数，没有你的代码或文件名。',
 }
 
 export type Words = typeof zh
@@ -101,7 +107,7 @@ const en: Words = {
   lookAuto: 'Follow the time',
   lookSet: (name: string) => `Pinned to ${name}.`,
   lookAutoSet: 'The look follows the time: a sunny pond by day, fireflies after 6 pm, rain now and then.',
-  footer: 'Your choices are remembered next time. Commands: /skin lamb, /skin bear, /skin usage, /skin nap.',
+  footer: 'Your choices are remembered next time. Commands: /skin lamb, /skin bear, /skin duck, /skin share (today\'s card), /skin usage, /skin nap.',
   commandHelp: 'Switch skins, turn motion and effects on or off (Lemon Themes)',
   usageOpened: 'Usage pane opened.',
   paneOpened: 'Skins pane opened: pick a skin, or switch off the motion and effects you do not want.',
@@ -157,6 +163,12 @@ const en: Words = {
   gardenUnreadable: "Can't read your garden records. Nothing is counted or drawn this time, so your old flowers are not written over.",
   gardenUnwritable: "Can't save your garden records: these flowers were not kept.",
   gardenLocal: 'Kept only on your own computer (one line per day).',
+  cardTitle: "Today's card",
+  cardOpened: "Today's card is open: take a screenshot to post it; Copy text copies the words.",
+  cardCopy: 'Copy text',
+  cardCopied: 'Copied: paste it wherever you post.',
+  cardNotCopied: "Couldn't copy to the clipboard; select the text by hand.",
+  cardHow: 'To post the picture, take a screenshot (on a Mac, ⌘⇧4 and drag over the card). The card holds only today\'s flowers and totals, none of your code or file names.',
 }
 
 export const WORDS: Record<Lang, Words> = { zh, en }

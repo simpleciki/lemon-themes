@@ -2,7 +2,7 @@ import type { ThemeMessageRule, ThemeSetArgs } from 'claude-code'
 
 import { makeColors } from '../../make-colors.js'
 import type { Skin } from '../skin'
-import { BADGE, ICONS, STICKERS, juiceGlass, limitRing, scene, sizeOf } from './art'
+import { BADGE, ICONS, STICKERS, juiceGlass, limitRing, scene, defOf, sizeOf } from './art'
 
 const { theme, problems } = makeColors({
   label: 'Lemon Bear',
@@ -90,7 +90,7 @@ export const LEMON_BEAR: Skin = {
   badge: BADGE,
   ink: { heading: '#b9781a', gauge: '#d99a00', border: '#e6bf4a', ok: '#6f9e4c' },
   emoji: { title: '🍋🐻', mascot: '🐻', context: '🍋', token: '🍯', agents: '🐝' },
-  garden: () => ({ flower: 'daisy', bush: 'lemon', landmark: 'lemonade', bloom: 'sparkle', size: sizeOf, ink: '#8a6a1c', mound: '#e6efc0' }),
+  garden: () => ({ flower: 'daisy', bush: 'lemon', landmark: 'lemonade', bloom: 'sparkle', size: sizeOf, def: defOf, ink: '#8a6a1c', mound: '#e6efc0' }),
   cheers: {
     praise: { zh: ['小熊收到夸夸啦，开心转圈！', '柠檬汁加满，继续冲！', '这个点子闪闪发光～'], en: ['The bear got a compliment and spins with joy!', 'Lemonade topped up, keep going!', 'That idea sparkles~'] },
     commit: { zh: ['提交成功！小熊给你盖了个章 🍋', '又一块砖稳稳放好了！'], en: ['Committed! The bear stamps it for you 🍋', 'Another brick, firmly in place!'] },

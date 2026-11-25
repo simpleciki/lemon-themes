@@ -282,3 +282,64 @@ test('in English it speaks English', async ($, on) => {
   await $.session.start({ source: 'startup', cwd: '/tmp' } as any)
   expect(await backdropSvg($)).toContain('Commit once and I')
 })
+
+// ---------- today's card ----------
+
+const CARD = { ...PANE, requestId: 'lemon-themes-card', props: { ...PANE.props, title: '今日小结' } }
+
+test("/skin share opens today's card: today's flowers, the garden so far, the mascot; the text copies", async ($, on) => {
+  fakeStore(on, { garden: { v: 1, days: { '2026-11-22': [3, 0], '2026-11-23': [120, 1], '2026-11-24': [2, 1] } } })
+  const copied: string[] = []
+  on('ui.copy', (_: unknown, e: any) => {
+    copied.push(e.text)
+    return { value: { isCopied: true } }
+  })
+  on('ui.open', () => ({ value: { isPlaced: true } }))
+  await $.session.start({ source: 'startup', cwd: '/tmp' } as any)
+  const out = await $.command.run({ command: 'skin', args: 'share' } as any)
+  expect(out.text).toContain('今日小结已打开')
+
+  for (const skinWord of ['bear', 'lamb', 'duck']) {
+    await $.command.run({ command: 'skin', args: skinWord } as any)
+    const ui = await $.ui.mount(CARD)
+    const src = String((await ui.find({ type: 'Svg' }))?.props.source)
+    expect(src).toContain('2026-11-24 的小结')
+    expect(src).toContain('今天种了 2 朵花')
+    expect(src).toContain('测试全绿 1 次')
+    expect(src).toContain('连续第 3 天')
+    expect(src).toContain('花园共 125 朵 · 第 2 片草地')
+    expect(src.length).toBeLessThanOrEqual(131072)
+    // well-formed: no attribute twice on the mascot's <svg> (a browser refuses the whole picture)
+    for (const tag of src.match(/<svg[^>]*>/g) ?? []) {
+      const names = [...tag.matchAll(/\s([a-zA-Z:-]+)=/g)].map(m => m[1])
+      expect(new Set(names).size, tag.slice(0, 80)).toBe(names.length)
+    }
+    await ui.unmount()
+  }
+  const ui = await $.ui.mount(CARD)
+  await ui.press({ key: 'copy' })
+  await ui.unmount()
+  expect(copied[0]).toContain('今天种了 2 朵花，测试全绿 1 次，连续第 3 天')
+  expect(copied[0]).toContain('github.com/simpleciki/lemon-themes')
+})
+
+test('the card holds no code, paths or file names: only the counts', async ($, on) => {
+  fakeStore(on, { garden: { v: 1, days: { '2026-11-24': [1, 0] } } })
+  on('tool.call', () => ({ result: {} }))
+  await $.session.start({ source: 'startup', cwd: '/Users/someone/secret-project' } as any)
+  await $.tool.call({ tool: 'Bash', command: 'git commit -m "feat: secret-feature"' } as any)
+  const ui = await $.ui.mount(CARD)
+  const src = String((await ui.find({ type: 'Svg' }))?.props.source)
+  await ui.unmount()
+  expect(src).toContain('今天种了 2 朵花')
+  expect(src).not.toContain('secret')
+})
+
+test('an unreadable garden: the card says so instead of showing zero', async ($, on) => {
+  fakeStore(on, {}, ['garden'])
+  await $.session.start({ source: 'startup', cwd: '/tmp' } as any)
+  const ui = await $.ui.mount(CARD)
+  expect((await ui.find({ type: 'Text' }))?.text).toContain('读不到花园记录')
+  expect(await ui.find({ type: 'Svg' })).toBeUndefined()
+  await ui.unmount()
+})
