@@ -81,17 +81,42 @@ Soft felt-ball stickers: faint crayon-hatched paper, a little grassy hill on eac
 </tr>
 </table>
 
+## pond-duck
+
+Oil-pastel crayon: a little pond on each side with reeds and lily pads. The duckling follows the clock: pecking by the pond by day, a nightcap and fireflies after 6 pm, and now and then a rainy day with a rain hat and puddles. `/skin` can pin one of the three.
+
+<table>
+<tr>
+<td align="center" width="33%">
+<img src="assets/pond-duck/state-day.svg" alt="By day: the duckling stands by the pond" width="100%">
+<br><b>Day</b><br><sub>Pecks and blinks; lotus and dragonflies</sub>
+</td>
+<td align="center" width="33%">
+<img src="assets/pond-duck/state-dusk.svg" alt="Dusk: the duckling in a purple nightcap" width="100%">
+<br><b>Dusk</b><br><sub>A nightcap after 6 pm; moon and fireflies</sub>
+</td>
+<td align="center" width="33%">
+<img src="assets/pond-duck/state-rain.svg" alt="Rain: the duckling in a rain hat" width="100%">
+<br><b>Rain</b><br><sub>A rain hat; rainbow, mushrooms, puddles</sub>
+</td>
+</tr>
+</table>
+
 ## Switch skins, switch things off: `/skin`
 
-<img src="assets/skin-pane.png" alt="The /skin pane: pick the lemon bear or the meadow lamb, then six switches and two shortcut buttons" width="560">
+<img src="assets/skin-pane-en.png" alt="The /skin pane: language, the lemon bear, meadow lamb or pond duckling, the duckling's look, the garden's totals, then nine switches and two shortcut buttons" width="560">
 
 Type `/skin` (or press 皮肤 on the usage band) to open the pane:
 - **Pick a skin**: it changes on the spot.
-- **Eight switches**: backdrop motion, floating stickers, stickers on messages, the usage band, celebrations and click effects, the companion garden, the mascot's status bubble, the mascot's nap. On a slow computer, 省电模式 turns motion, floating stickers and effects off at once.
+- **Nine switches**: backdrop motion, floating stickers, stickers on messages, the usage band, celebrations and click effects, the companion garden, the mascot's status bubble, the mascot talking, the mascot's nap. On a slow computer, 省电模式 turns motion, floating stickers and effects off at once.
 - **Companion garden**: every successful `git commit` plants a flower on the left bank, and an all-green test run opens a little patch; every 10 flowers grow into a bush, every 100 the meadow levels up. The pane shows a line of totals. The record stays on your own computer, one line per day; if it cannot be read, the garden says "Can't read your garden records" rather than pretending the meadow is empty.
+<img src="assets/pond-duck/garden-en.svg" alt="The left bank full of flowers, labelled 🌼 137 · meadow 2; the duckling says 👋 your turn" width="100%">
+
+- **The mascot talks**: it says hello when you open the app, remembers how many days in a row you have met or how long you were away, and speaks up at the first flower, every 10th and 100th, late at night, and after three failures in a row ("No rush"). At most one ordinary line every 10 minutes.
+- **Today's card**: `/skin share` opens a card of today: flowers planted, green runs, days in a row, the garden's total, with the mascot. Take a screenshot to post it; Copy text copies a caption. The card holds counts only, none of your code or file names.
 - **Status bubble**: "…" while Claude thinks or runs a tool, "👋 your turn" while it waits for your approval or your answer, "!" when a tool fails.
 - **It remembers** your choices across sessions.
-- Commands: `/skin 小羊` or `/skin meadow-sheep`, `/skin 小熊` or `/skin lemon-bear`, `/skin usage` for the usage pane, `/skin nap` to put the mascot to sleep.
+- Commands: `/skin 小羊` or `/skin meadow-sheep`, `/skin 小熊` or `/skin lemon-bear`, `/skin duck` or `/skin pond-duck` (then `/skin dusk`, `/skin rain`, `/skin auto` for its look), `/skin usage` for the usage pane, `/skin nap` to put the mascot to sleep.
 
 ## Install
 
@@ -111,7 +136,7 @@ claude plugin install lemon-themes --marketplace simpleciki/lemon-themes
 
 In the desktop app, where `/plugin` does not run: click + next to the prompt box, then Plugins, Add marketplace with `simpleciki/lemon-themes`, then Add plugin.
 
-New sessions then wear the lemon bear; type `/skin` to switch to the meadow lamb. The backdrop shows in the desktop and mobile apps; the terminal shows the band only.
+New sessions then wear the lemon bear; type `/skin` to switch to the meadow lamb or the pond duckling. The backdrop shows in the desktop and mobile apps; the terminal shows the band only.
 
 Already have the old `lemon-bear` plugin? Disable it first (`claude plugin disable lemon-bear@lemon-themes`), then install `lemon-themes`, or the two will fight over the backdrop.
 

@@ -5,7 +5,7 @@
 import { atom, read, update } from 'claude-code'
 import type { Hook, Register, RenderChildren } from 'claude-code'
 
-import type { Busy, Garden, Options, Poke, Snap, Tokens } from '../types'
+import type { Busy, Garden, Options, Poke, Snap, Talk, Tokens } from '../types'
 import {
   cells,
   effortText,
@@ -19,6 +19,7 @@ import {
   stillSvg,
   totalTokens,
 } from './format'
+import { cardFacts, cardSvg, cardText } from './card'
 import { EMPTY_GARDEN, GARDEN_KEY, SVG_LIMIT, gardenLayer, localDay, overlay, parseGarden, plant, storedGarden, totals } from './garden'
 import { WORDS, langFromEnv, pick } from './i18n'
 import type { Lang, Words } from './i18n'
@@ -26,6 +27,7 @@ import { SKINS, skinById } from './skins/index'
 import type { Cheer, Skin } from './skins/skin'
 import { DEFAULT_OPTIONS, SWITCHES, savedOptions } from './state'
 import { statusLayer, statusWhileCalling } from './status'
+import { afterPlant, calmDown, greeting, lateNight, talkLayer } from './talk'
 
 type Api = Parameters<Hook<'session.start'>>[0]
 
@@ -50,6 +52,8 @@ export const look = atom({ plugin: 'lemon-themes', key: 'look' } as const, '')
 export const garden = atom({ plugin: 'lemon-themes', key: 'garden' } as const, EMPTY_GARDEN)
 // what the mascot shows Claude doing
 export const busy = atom({ plugin: 'lemon-themes', key: 'busy' } as const, 'idle')
+// the line the mascot is saying now, if any
+export const talk = atom({ plugin: 'lemon-themes', key: 'talk' } as const, null)
 
 
 const PRAISE = /(太好了|太棒|好棒|很棒|真棒|棒棒|好主意|好点子|完美|厉害|绝了|好看|喜欢|可爱|nice|great|awesome|perfect|love it|amazing|well done)/i
@@ -59,6 +63,7 @@ const POKE_MS: Record<Poke['what'], number> = { mascot: 3600, party: 3600, pop: 
 const NAP_AFTER_MS = 10 * 60 * 1000
 const USAGE = 'lemon-themes-usage'
 const SKIN_PANE = 'lemon-themes-skins'
+const CARD = 'lemon-themes-card'
 // Assumed exchange rate for the CNY line; shown on the pane as an assumption.
 const USD_TO_CNY = 7.1
 const SCENES = new Set(SKINS.map(s => s.id))
@@ -66,6 +71,9 @@ const TESTS = /\b(npm|pnpm|yarn|bun)\s+(run\s+)?test\b|\bpytest\b|\bvitest\b|\bj
 const COMMIT = /\bgit\s+commit\b/
 // How long the worried face stays after a failed tool, before it goes back to busy.
 const WORRY_MS = 5000
+// How long a line stays up, and the least time between two ordinary lines (milestones skip the wait).
+const TALK_MS = 9000
+const TALK_GAP_MS = 10 * 60 * 1000
 
 async function current($: Api): Promise<{ s: Skin; o: Options; lg: Lang; w: Words }> {
   const lg: Lang = (await read($, lang)) === 'en' ? 'en' : 'zh'
@@ -159,18 +167,20 @@ async function readGarden($: Api): Promise<Garden> {
 
 /** One more flower (a commit) or patch (an all-green test run) on today's row. Reads the store
  *  again first, so two sessions open at once both count; writes nothing over an unreadable record. */
-async function recordGarden($: Api, what: 'commit' | 'green') {
+async function recordGarden($: Api, what: 'commit' | 'green'): Promise<Garden | null> {
   const fresh = await readGarden($)
   if (!fresh.ok) {
     await update($, garden, () => fresh)
-    return
+    return null
   }
   const grown = plant(fresh, localDay(await $.clock.now()), what)
   try {
     await $.store.set(GARDEN_KEY, storedGarden(grown))
     await update($, garden, () => grown)
+    return grown
   } catch {
     await update($, garden, () => ({ ...grown, ok: false, why: 'write' as const }))
+    return null
   }
 }
 
@@ -183,6 +193,25 @@ async function setBusy($: Api, next: Busy) {
   shown = next
   await update($, busy, () => next)
   if (next === 'wait') await update($, isAsleep, () => false)
+}
+
+let lastTalk = -Infinity
+let lastLate = -Infinity
+let failsInRow = 0
+/** Says a line for a while. An ordinary line waits its turn; a milestone always speaks. */
+async function speak($: Api, text: string | null, isMilestone = false) {
+  if (text === null || !(await read($, options)).talk) return
+  const now = await $.clock.now()
+  if (!isMilestone && now - lastTalk < TALK_GAP_MS) return
+  lastTalk = now
+  let mine = 0
+  await update($, talk, (t: Talk | null) => {
+    mine = (t?.n ?? 0) + 1
+    return { text, n: mine }
+  })
+  $.clock.after(TALK_MS, () => {
+    void update($, talk, (t: Talk | null) => (t !== null && t.n === mine ? null : t))
+  })
 }
 
 /** A failure: the worried face for a few seconds, then back to busy if nothing else came since. */
@@ -227,6 +256,13 @@ export const register: Register = on => {
     lastActive = await $.clock.now()
     await update($, isAsleep, () => false)
     await setBusy($, 'busy')
+    if (lastActive - lastLate > 60 * 60 * 1000) {
+      const line = lateNight(lastActive, (await read($, lang)) === 'en' ? 'en' : 'zh')
+      if (line !== null) {
+        lastLate = lastActive
+        await speak($, line, true)
+      }
+    }
     if (PRAISE.test(e.text)) {
       await celebrate($, 'praise')
     }
@@ -251,6 +287,8 @@ export const register: Register = on => {
     await update($, busy, () => 'idle')
     const g = await readGarden($)
     await update($, garden, () => g)
+    lastTalk = -Infinity
+    await speak($, greeting(g, await $.clock.now(), startLang))
 
     await $.command.register({ name: 'skin', description: WORDS[startLang].commandHelp })
     await refresh($)
@@ -297,6 +335,10 @@ export const register: Register = on => {
       await $.ui.open({ id: USAGE, title: w.usageTitle(pick(s.mascot, lg)) })
       return { text: w.usageOpened }
     }
+    if (/^(share|card|小结|分享|卡片)/i.test(arg)) {
+      await $.ui.open({ id: CARD, title: w.cardTitle })
+      return { text: w.cardOpened }
+    }
     if (/yay|撒花|庆祝/.test(arg)) {
       await celebrate($, 'yay')
       return { text: w.cheering(pick(s.mascot, lg)) }
@@ -324,18 +366,23 @@ export const register: Register = on => {
     const ran = await next(e)
     if (ran.isError === true && ran.deny === undefined) {
       await worry($)
+      failsInRow++
+      if (failsInRow === 3) await speak($, calmDown((await read($, lang)) === 'en' ? 'en' : 'zh'))
     } else {
+      failsInRow = 0
       // the prompt or question was answered: back to work
       await setBusy($, 'busy')
     }
     if (e.tool === 'Bash' && ran.deny === undefined && ran.isError !== true) {
       const cmd = e.command
-      if (COMMIT.test(cmd)) {
-        await recordGarden($, 'commit')
-        await celebrate($, 'commit')
-      } else if (TESTS.test(cmd)) {
-        await recordGarden($, 'green')
-        await celebrate($, 'tests')
+      const what = COMMIT.test(cmd) ? 'commit' : TESTS.test(cmd) ? 'green' : null
+      if (what !== null) {
+        const grown = await recordGarden($, what)
+        await celebrate($, what === 'commit' ? 'commit' : 'tests')
+        if (grown !== null) {
+          const lg: Lang = (await read($, lang)) === 'en' ? 'en' : 'zh'
+          await speak($, afterPlant(grown, localDay(await $.clock.now()), what, lg), true)
+        }
       }
     }
 
@@ -409,7 +456,10 @@ export const register: Register = on => {
     const variant = await lookOf($, s)
     const scene = s.scene(asleep, p, !o.motion, o.floaters, variant)
     // the status bubble, then the garden in whatever room is left under the app's limit
-    const bubble = o.status ? statusLayer(await read($, busy), lg) : ''
+    // what is said: waiting for you first, then a line the mascot is saying, then worry or busy
+    const state = o.status ? await read($, busy) : 'idle'
+    const line = o.talk ? await read($, talk) : null
+    const bubble = state === 'wait' || line === null ? statusLayer(state, lg) : talkLayer(line.text)
     const g = o.garden ? await read($, garden) : null
     const today = localDay(await $.clock.now())
     const flowers = g === null ? '' : gardenLayer(g, today, s.garden(variant), lg, SVG_LIMIT - scene.length - bubble.length)
@@ -636,6 +686,37 @@ export const register: Register = on => {
         </Box>
         <Text dimColor size="footnote">
           {w.footer}
+        </Text>
+      </Box>
+    )
+  })
+
+  // /skin share: today's card, to screenshot and post, with its text one press from the clipboard.
+  on('ui.render', { component: 'Pane', requestId: CARD }, async ($, e) => {
+    const ui = $.ui.resolve(e)
+    const { Box, Text, Button } = ui
+    const { s, lg, w } = await current($)
+    const g = await read($, garden)
+    if (!g.ok) {
+      return <Text color="danger">{g.why === 'write' ? w.gardenUnwritable : w.gardenUnreadable}</Text>
+    }
+    const now = await $.clock.now()
+    const f = cardFacts(g, localDay(now))
+    const words = cardText(f, lg)
+    const isRich = (e.surface === 'desktop' || e.surface === 'mobile') && 'Svg' in ui
+    const look = { name: pick(s.name, lg), badge: s.badge, kit: s.garden(await lookOf($, s)), heading: s.ink.heading, border: s.ink.border }
+
+    return (
+      <Box flexDirection="column" gap={1}>
+        {isRich ? <ui.Svg source={stillSvg(cardSvg(f, look, lg))} alt={words} width={640} height={360} /> : <Text>{words}</Text>}
+        <Box flexDirection="row" gap={1} alignItems="center">
+          <Button key="copy" label={w.cardCopy} onPress={async () => {
+            const r = await $.ui.copy({ text: words, surface: e.surface })
+            $.ui.toast(r.isCopied ? w.cardCopied : w.cardNotCopied)
+          }} />
+        </Box>
+        <Text dimColor size="footnote">
+          {w.cardHow}
         </Text>
       </Box>
     )

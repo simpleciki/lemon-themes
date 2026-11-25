@@ -24,11 +24,17 @@ all five ideas below as one whole.
 
 ## Build order
 
-1. Garden + status
-2. Talking (reads the garden and history)
-3. Rare finds + collection book
-4. Daily card
-5. Your own pet (with `skills/make-theme`)
+1. Garden + status (built, merged in #4)
+2. Talking (reads the garden and history) (built on `feat/duck-tryon-talk`: a greeting that remembers days in a row
+   or time away, lines at milestones and late at night, "no rush" after three failures; at most one
+   ordinary line every 10 minutes, milestones always; its own switch in `/skin`)
+3. 〔已失效 2026-11-24 → companion-garden.md「只做第 2 步和第 4 步」〕Rare finds + collection book
+4. Daily card (built on `feat/duck-tryon-talk`: `/skin share` opens a pane with today's card and a Copy text
+   button. The plugin cannot write a PNG, so the picture is shared as a screenshot; the card holds counts only)
+5. 〔已失效 2026-11-24 → companion-garden.md「只做第 2 步和第 4 步」〕Your own pet (with `skills/make-theme`)
+
+〔定 2026-11-24 Ciki〕只做第 2 步和第 4 步：「我觉得第三步和第五步可以不用了。只做2+4」. Steps 3 and 5 are
+dropped, not postponed.
 
 Each step ships on its own, with tests, and is switched on or off from `/skin` like the other switches.
 

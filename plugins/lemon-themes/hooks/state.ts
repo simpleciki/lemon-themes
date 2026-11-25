@@ -4,7 +4,7 @@ import type { Options } from '../types'
 import type { L } from './i18n'
 
 /** Everything on, as a new install starts. */
-export const DEFAULT_OPTIONS: Options = { motion: true, floaters: true, bubbles: true, band: true, cheers: true, nap: true, garden: true, status: true }
+export const DEFAULT_OPTIONS: Options = { motion: true, floaters: true, bubbles: true, band: true, cheers: true, nap: true, garden: true, status: true, talk: true }
 
 /** The switches in the /skin pane, in order, with what each one turns off. */
 export const SWITCHES: { key: keyof Options; label: L; off: L }[] = [
@@ -15,6 +15,7 @@ export const SWITCHES: { key: keyof Options; label: L; off: L }[] = [
   { key: 'cheers', label: { zh: '庆祝和点击特效', en: 'Celebrations and click effects' }, off: { zh: '关掉后提交、测试通过和点击都不放特效', en: 'Off: no effects for commits, passing tests or clicks' } },
   { key: 'garden', label: { zh: '陪伴花园', en: 'Companion garden' }, off: { zh: '关掉后不画花，提交和测试照样记在本机', en: 'Off: no flowers drawn; commits and tests are still counted on this computer' } },
   { key: 'status', label: { zh: '吉祥物报状态', en: 'Mascot shows what Claude is doing' }, off: { zh: '关掉后不再冒「思考中 / 等你 / 出错了」的小气泡', en: 'Off: no "thinking / your turn / something failed" bubbles' } },
+  { key: 'talk', label: { zh: '吉祥物会说话', en: 'The mascot talks' }, off: { zh: '关掉后不再冒「早呀」「连续第 3 天」这类小话', en: 'Off: no little lines like "Morning!" or "Day 3 in a row"' } },
   { key: 'nap', label: { zh: '吉祥物打盹', en: "The mascot's nap" }, off: { zh: '关掉后吉祥物一直醒着', en: 'Off: the mascot stays awake' } },
 ]
 

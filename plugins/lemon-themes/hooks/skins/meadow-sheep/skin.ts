@@ -2,7 +2,7 @@ import type { ThemeMessageRule, ThemeSetArgs } from 'claude-code'
 
 import { makeColors } from '../../make-colors.js'
 import type { Skin } from '../skin'
-import { BADGE, ICONS, STICKERS, juiceGlass, limitRing, scene, sizeOf } from './art'
+import { BADGE, ICONS, STICKERS, juiceGlass, limitRing, scene, defOf, sizeOf } from './art'
 
 const { theme, problems } = makeColors({
   label: 'Meadow Sheep',
@@ -90,7 +90,7 @@ export const MEADOW_SHEEP: Skin = {
   badge: BADGE,
   ink: { heading: '#5f8a3a', gauge: '#5f9a3a', border: '#a9cf7d', ok: '#4f8a3a' },
   emoji: { title: '🌱🐑', mascot: '🐑', context: '🥛', token: '🧶', agents: '🦋' },
-  garden: () => ({ flower: 'daisy', bush: 'blossom', landmark: 'tree', bloom: 'clover', size: sizeOf, ink: '#5f8a3a' }),
+  garden: () => ({ flower: 'daisy', bush: 'blossom', landmark: 'tree', bloom: 'clover', size: sizeOf, def: defOf, ink: '#5f8a3a' }),
   cheers: {
     praise: { zh: ['小羊收到夸夸啦，开心蹦了一下！', '草地上的小花都开了～', '这个点子软软的，好喜欢！'], en: ['The lamb got a compliment and does a little hop!', 'All the meadow flowers just opened~', 'Such a soft, lovely idea!'] },
     commit: { zh: ['提交成功！小羊给你叼来一朵小雏菊 🌼', '又一块砖稳稳放好了！'], en: ['Committed! The lamb brings you a daisy 🌼', 'Another brick, firmly in place!'] },

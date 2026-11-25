@@ -114,3 +114,7 @@ Each line is something we tried, saw fail in the app, and fixed. Check them agai
   `session.usage`, `session.model`, `agent.list`, `command.register`, `ui.toast`).
 - **Count both strips' wrappers in a size budget.** An overlay that fills "what is left" overshot the
   131,072 limit by 89 characters because one `<svg>` wrapper was not counted.
+- **An attribute written twice makes a browser refuse the whole SVG** (it shows a broken image). Reusing a
+  skin's `badge` inside another picture, drop its own `width`/`height` before giving it new ones.
+- **A plugin has no way to make a PNG**: `$.ui.copy` takes text only and `$.fs.write` writes text. A card
+  to post is drawn as an `Svg` in a pane and shared as a screenshot.
