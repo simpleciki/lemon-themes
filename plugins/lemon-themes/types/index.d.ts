@@ -65,6 +65,7 @@ declare module 'claude-code' {
       poke: Poke | null
       lang: 'zh' | 'en'
       pin: string
+      scheme: 'auto' | 'light' | 'dark'
       look: string
       garden: Garden
       busy: Busy
