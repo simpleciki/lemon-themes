@@ -91,3 +91,8 @@ Each line is something we tried, saw fail in the app, and fixed. Check them agai
 - **Rebuilding `lemon-bear` now traces it a little differently** (the vtracer call changed). Its
   committed `sprites.ts` and `frames.ts` are the reviewed ones; rebuild it only when you mean to
   look at the bear again.
+- **A small patch of colour vanishes from a short palette** (the duckling's lavender nightcap traced
+  beige at 8 colours). Pin it: `pin_colors` on the sequence in `theme-build.json` reserves palette
+  slots for those colours. It cost less than adding two more colours everywhere (99K against 140K).
+- **Flat oil-pastel art traces far better than felt or impasto**: coarse body + fine face gives four
+  frames in about 60-75K with the crayon grain still showing.

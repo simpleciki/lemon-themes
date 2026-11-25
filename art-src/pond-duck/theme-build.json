@@ -1,0 +1,426 @@
+{
+  "theme": "pond-duck",
+  "out": "plugins/lemon-themes/hooks/skins/pond-duck",
+  "sheets": {
+    "props": {
+      "file": "props-A.png",
+      "alpha_cut": 220
+    },
+    "parts": {
+      "file": "parts-A.png",
+      "alpha_cut": 220
+    },
+    "idle": {
+      "file": "seq-idle-A.png",
+      "alpha_cut": 200
+    },
+    "sleep": {
+      "file": "seq-sleep-A.png",
+      "alpha_cut": 200
+    },
+    "propsDusk": {
+      "file": "props-C.png",
+      "alpha_cut": 220
+    },
+    "idleDusk": {
+      "file": "seq-idle-C.png",
+      "alpha_cut": 200
+    },
+    "sleepDusk": {
+      "file": "seq-sleep-C.png",
+      "alpha_cut": 200
+    },
+    "propsRain": {
+      "file": "props-B.png",
+      "alpha_cut": 220
+    },
+    "idleRain": {
+      "file": "seq-idle-B.png",
+      "alpha_cut": 200
+    },
+    "sleepRain": {
+      "file": "seq-sleep-B.png",
+      "alpha_cut": 200
+    }
+  },
+  "sprites": {
+    "head": {
+      "sheet": "parts",
+      "item": 0,
+      "scale": 0.2,
+      "colors": 8,
+      "speck": 4
+    },
+    "pad": {
+      "sheet": "props",
+      "item": 0,
+      "scale": 0.3,
+      "colors": 6,
+      "speck": 5
+    },
+    "lotus": {
+      "sheet": "props",
+      "item": 1,
+      "scale": 0.3,
+      "colors": 7,
+      "speck": 5
+    },
+    "reeds": {
+      "sheet": "props",
+      "item": 2,
+      "scale": 0.3,
+      "colors": 6,
+      "speck": 5
+    },
+    "ripple": {
+      "sheet": "props",
+      "item": 3,
+      "scale": 0.3,
+      "colors": 5,
+      "speck": 5
+    },
+    "boat": {
+      "sheet": "props",
+      "item": 4,
+      "scale": 0.3,
+      "colors": 5,
+      "speck": 5
+    },
+    "fly": {
+      "sheet": "props",
+      "item": 5,
+      "scale": 0.3,
+      "colors": 5,
+      "speck": 5
+    },
+    "snail": {
+      "sheet": "props",
+      "item": 6,
+      "scale": 0.3,
+      "colors": 6,
+      "speck": 5
+    },
+    "grass": {
+      "sheet": "props",
+      "item": 7,
+      "scale": 0.3,
+      "colors": 6,
+      "speck": 5
+    },
+    "sparkle": {
+      "sheet": "props",
+      "item": 8,
+      "scale": 0.3,
+      "colors": 4,
+      "speck": 4
+    },
+    "heart": {
+      "sheet": "props",
+      "item": 9,
+      "scale": 0.3,
+      "colors": 4,
+      "speck": 4
+    },
+    "daisy": {
+      "sheet": "props",
+      "item": 10,
+      "scale": 0.3,
+      "colors": 4,
+      "speck": 4
+    },
+    "cloud": {
+      "sheet": "props",
+      "item": 11,
+      "scale": 0.3,
+      "colors": 4,
+      "speck": 5
+    },
+    "moon": {
+      "sheet": "propsDusk",
+      "item": 0,
+      "scale": 0.3,
+      "colors": 6,
+      "speck": 5
+    },
+    "star": {
+      "sheet": "propsDusk",
+      "item": 1,
+      "scale": 0.3,
+      "colors": 6,
+      "speck": 5
+    },
+    "firefly": {
+      "sheet": "propsDusk",
+      "item": 2,
+      "scale": 0.3,
+      "colors": 6,
+      "speck": 5
+    },
+    "nPad": {
+      "sheet": "propsDusk",
+      "item": 3,
+      "scale": 0.3,
+      "colors": 6,
+      "speck": 5
+    },
+    "bud": {
+      "sheet": "propsDusk",
+      "item": 4,
+      "scale": 0.3,
+      "colors": 6,
+      "speck": 5
+    },
+    "nReeds": {
+      "sheet": "propsDusk",
+      "item": 5,
+      "scale": 0.3,
+      "colors": 6,
+      "speck": 5
+    },
+    "nRipple": {
+      "sheet": "propsDusk",
+      "item": 6,
+      "scale": 0.3,
+      "colors": 6,
+      "speck": 5
+    },
+    "lantern": {
+      "sheet": "propsDusk",
+      "item": 7,
+      "scale": 0.3,
+      "colors": 6,
+      "speck": 5
+    },
+    "nGrass": {
+      "sheet": "propsDusk",
+      "item": 8,
+      "scale": 0.3,
+      "colors": 6,
+      "speck": 5
+    },
+    "nSparkle": {
+      "sheet": "propsDusk",
+      "item": 9,
+      "scale": 0.3,
+      "colors": 6,
+      "speck": 5
+    },
+    "nHeart": {
+      "sheet": "propsDusk",
+      "item": 10,
+      "scale": 0.3,
+      "colors": 6,
+      "speck": 5
+    },
+    "nCloud": {
+      "sheet": "propsDusk",
+      "item": 11,
+      "scale": 0.3,
+      "colors": 6,
+      "speck": 5
+    },
+    "puddle": {
+      "sheet": "propsRain",
+      "item": 0,
+      "scale": 0.3,
+      "colors": 6,
+      "speck": 5
+    },
+    "drop": {
+      "sheet": "propsRain",
+      "item": 1,
+      "scale": 0.3,
+      "colors": 6,
+      "speck": 5
+    },
+    "rainCloud": {
+      "sheet": "propsRain",
+      "item": 2,
+      "scale": 0.3,
+      "colors": 4,
+      "speck": 5
+    },
+    "rainbow": {
+      "sheet": "propsRain",
+      "item": 3,
+      "scale": 0.3,
+      "colors": 6,
+      "speck": 5
+    },
+    "mushroom": {
+      "sheet": "propsRain",
+      "item": 4,
+      "scale": 0.3,
+      "colors": 5,
+      "speck": 5
+    },
+    "boots": {
+      "sheet": "propsRain",
+      "item": 5,
+      "scale": 0.3,
+      "colors": 5,
+      "speck": 5
+    },
+    "leaf": {
+      "sheet": "propsRain",
+      "item": 6,
+      "scale": 0.3,
+      "colors": 5,
+      "speck": 5
+    },
+    "clover": {
+      "sheet": "propsRain",
+      "item": 7,
+      "scale": 0.3,
+      "colors": 6,
+      "speck": 5
+    },
+    "wetGrass": {
+      "sheet": "propsRain",
+      "item": 8,
+      "scale": 0.3,
+      "colors": 4,
+      "speck": 5
+    },
+    "rSparkle": {
+      "sheet": "propsRain",
+      "item": 9,
+      "scale": 0.3,
+      "colors": 6,
+      "speck": 5
+    },
+    "rHeart": {
+      "sheet": "propsRain",
+      "item": 10,
+      "scale": 0.3,
+      "colors": 6,
+      "speck": 5
+    }
+  },
+  "sequences": {
+    "idle": {
+      "sheet": "idle",
+      "keep": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "scale": 0.3,
+      "colors": 8,
+      "speck": 6,
+      "detail": {
+        "ink": 60,
+        "pad": 0.12,
+        "skin": 150,
+        "colors": 7,
+        "speck": 2
+      },
+      "median": 5
+    },
+    "sleep": {
+      "sheet": "sleep",
+      "keep": [
+        0,
+        1
+      ],
+      "scale": 0.3,
+      "colors": 8,
+      "speck": 6,
+      "detail": {
+        "ink": 60,
+        "pad": 0.12,
+        "skin": 150,
+        "colors": 7,
+        "speck": 2
+      },
+      "median": 5
+    },
+    "idleDusk": {
+      "sheet": "idleDusk",
+      "keep": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "scale": 0.3,
+      "colors": 8,
+      "speck": 6,
+      "detail": {
+        "ink": 60,
+        "pad": 0.12,
+        "skin": 150,
+        "colors": 7,
+        "speck": 2
+      },
+      "median": 5,
+      "pin_colors": [
+        "#c2c7f0",
+        "#ac93c9",
+        "#8e6ead"
+      ]
+    },
+    "sleepDusk": {
+      "sheet": "sleepDusk",
+      "keep": [
+        0,
+        1
+      ],
+      "scale": 0.3,
+      "colors": 8,
+      "speck": 6,
+      "detail": {
+        "ink": 60,
+        "pad": 0.12,
+        "skin": 150,
+        "colors": 7,
+        "speck": 2
+      },
+      "median": 5,
+      "pin_colors": [
+        "#c2c7f0",
+        "#ac93c9",
+        "#8e6ead"
+      ]
+    },
+    "idleRain": {
+      "sheet": "idleRain",
+      "keep": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "scale": 0.3,
+      "colors": 8,
+      "speck": 6,
+      "detail": {
+        "ink": 60,
+        "pad": 0.12,
+        "skin": 150,
+        "colors": 7,
+        "speck": 2
+      },
+      "median": 5
+    },
+    "sleepRain": {
+      "sheet": "sleepRain",
+      "keep": [
+        0,
+        1
+      ],
+      "scale": 0.3,
+      "colors": 8,
+      "speck": 6,
+      "detail": {
+        "ink": 60,
+        "pad": 0.12,
+        "skin": 150,
+        "colors": 7,
+        "speck": 2
+      },
+      "median": 5
+    }
+  }
+}

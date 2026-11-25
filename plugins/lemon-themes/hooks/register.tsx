@@ -40,6 +40,10 @@ export const effort = atom({ plugin: 'lemon-themes', key: 'effort' } as const, n
 export const isAsleep = atom({ plugin: 'lemon-themes', key: 'isAsleep' } as const, false)
 export const poke = atom({ plugin: 'lemon-themes', key: 'poke' } as const, null)
 export const lang = atom({ plugin: 'lemon-themes', key: 'lang' } as const, 'zh')
+// a skin with several looks: 'auto' follows the time, or the id of a look the person pinned
+export const pin = atom({ plugin: 'lemon-themes', key: 'pin' } as const, 'auto')
+// the look the clock gives now, refreshed each minute so the backdrop redraws at 18:00 and 6:00
+export const look = atom({ plugin: 'lemon-themes', key: 'look' } as const, '')
 
 
 const PRAISE = /(太好了|太棒|好棒|很棒|真棒|棒棒|好主意|好点子|完美|厉害|绝了|好看|喜欢|可爱|nice|great|awesome|perfect|love it|amazing|well done)/i
@@ -56,6 +60,19 @@ const SCENES = new Set(SKINS.map(s => s.id))
 async function current($: Api): Promise<{ s: Skin; o: Options; lg: Lang; w: Words }> {
   const lg: Lang = (await read($, lang)) === 'en' ? 'en' : 'zh'
   return { s: skinById(await read($, skin)), o: await read($, options), lg, w: WORDS[lg] }
+}
+
+async function usePin($: Api, next: string) {
+  await update($, pin, () => next)
+  await $.store.set('pin', next)
+}
+
+/** The look a skin should draw now: the pinned one, else what the clock gives, else none. */
+async function lookOf($: Api, s: Skin): Promise<string | undefined> {
+  const p = await read($, pin)
+  if (p !== 'auto' && s.variants?.some(v => v.id === p)) return p
+  if (s.variantAt === undefined) return undefined
+  return s.variantAt(await $.clock.now())
 }
 
 async function useLang($: Api, next: Lang) {
@@ -168,6 +185,8 @@ export const register: Register = on => {
     const savedLang = await $.store.get('lang')
     const startLang: Lang = savedLang === 'en' || savedLang === 'zh' ? savedLang : langFromEnv(await $.env.get('LANG'))
     await update($, lang, () => startLang)
+    const savedPin = await $.store.get('pin')
+    await update($, pin, () => (typeof savedPin === 'string' ? savedPin : 'auto'))
     await applyLook($, skinById(await read($, skin)))
 
     await $.command.register({ name: 'skin', description: WORDS[startLang].commandHelp })
@@ -179,6 +198,9 @@ export const register: Register = on => {
     $.clock.every(60 * 1000, () => {
       void (async () => {
         const o = await read($, options)
+        const now = skinById(await read($, skin))
+        const at = now.variantAt === undefined ? '' : now.variantAt(await $.clock.now())
+        if (at !== (await read($, look))) await update($, look, () => at)
         if (o.nap && (await $.clock.now()) - lastActive > NAP_AFTER_MS) {
           await update($, isAsleep, () => true)
         }
@@ -196,6 +218,15 @@ export const register: Register = on => {
     const { s, lg, w } = await current($)
     if (/^(en|english|英文|zh|chinese|中文)$/i.test(arg)) {
       return { text: lg === 'en' ? 'Language: English.' : '语言：中文。' }
+    }
+    if (/^(auto|自动)$/i.test(arg)) {
+      await usePin($, 'auto')
+      return { text: w.lookAutoSet }
+    }
+    const pinned = s.variants?.find(v => v.id === arg.toLowerCase() || v.name.zh === arg)
+    if (pinned !== undefined) {
+      await usePin($, pinned.id)
+      return { text: w.lookSet(pick(pinned.name, lg)) }
     }
     if (/^(usage|用量)/.test(arg)) {
       await refresh($)
@@ -290,7 +321,8 @@ export const register: Register = on => {
     const lg: Lang = (await read($, lang)) === 'en' ? 'en' : 'zh'
     const asleep = o.nap && (await read($, isAsleep))
     const p = o.cheers && o.motion ? await read($, poke) : null
-    const svg = s.scene(asleep, p, !o.motion, o.floaters)
+    await read($, look) // redraw when the clock moves to another look
+    const svg = s.scene(asleep, p, !o.motion, o.floaters, await lookOf($, s))
 
     // One SVG: the app plays SMIL in a single backdrop Svg (two stacked layers stayed still).
     // isInteractive: without it the app did not pass clicks on the backdrop to ui.pointer.
@@ -415,6 +447,7 @@ export const register: Register = on => {
     const { Box, Text, Button } = ui
     const isRich = (e.surface === 'desktop' || e.surface === 'mobile') && 'Svg' in ui
     const now = await read($, skin)
+    const pinNow = await read($, pin)
     const { o, lg, w } = await current($)
 
     return (
@@ -453,6 +486,24 @@ export const register: Register = on => {
           </Box>
         ))}
 
+        {(() => {
+          const cur = SKINS.find(k => k.id === now)
+          if (cur?.variants === undefined) return null
+          return (
+            <Box flexDirection="row" alignItems="center" gap={1} flexWrap="wrap">
+              <Text weight="semibold">{w.lookRow}</Text>
+              {[{ id: 'auto', name: { zh: w.lookAuto, en: w.lookAuto } }, ...cur.variants].map(v =>
+                pinNow === v.id ? (
+                  <Text key={`look-${v.id}`} dimColor>
+                    {pick(v.name, lg)} ✓
+                  </Text>
+                ) : (
+                  <Button key={`look-${v.id}`} label={pick(v.name, lg)} onPress={() => usePin($, v.id)} />
+                ),
+              )}
+            </Box>
+          )
+        })()}
         <Text weight="semibold">{w.switches}</Text>
         {SWITCHES.map(sw => (
           <Box key={sw.key} flexDirection="row" alignItems="center" justifyContent="space-between" gap={1}>

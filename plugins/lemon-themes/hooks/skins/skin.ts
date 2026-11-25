@@ -24,8 +24,13 @@ export type Skin = {
   base: ThemeSetArgs
   /** What make-colors found wrong with the colours, logged once. */
   problems: string[]
-  /** The whole backdrop: still = no motion and the mascot's first frame only. */
-  scene: (isAsleep: boolean, poke: Poke | null, still: boolean, floaters: boolean) => string
+  /** The whole backdrop: still = no motion and the mascot's first frame only; variant = a look of
+   *  the skin's own (see variantAt), when it has more than one. */
+  scene: (isAsleep: boolean, poke: Poke | null, still: boolean, floaters: boolean, variant?: string) => string
+  /** For a skin that changes with the time of day or the weather: its look at this moment. */
+  variantAt?: (ms: number) => string
+  /** The looks a person can pin from /skin, with their names; absent for a skin with one look. */
+  variants?: { id: string; name: L }[]
   alt: { awake: L; asleep: L }
   /** Small stickers over the person's bubbles, one picked per message. */
   userStickers: string[]

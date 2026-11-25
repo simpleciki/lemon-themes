@@ -93,7 +93,9 @@ test('turning the floating stickers off leaves fewer drawings in the backdrop', 
 
 test('the awake backdrop of every skin stays under the app limit of 131,072 characters', async ($, on) => {
   fakeStore(on)
-  for (const scene of ['lemon-bear', 'meadow-sheep']) {
+  // noon on an ordinary day: the duckling's sunny look
+  on('clock.now', () => ({ value: new Date(2026, 10, 24, 12, 0).getTime() }))
+  for (const scene of ['lemon-bear', 'meadow-sheep', 'pond-duck']) {
     const ui = await $.ui.mount(backdrop(scene))
     const src = String((await ui.find({ type: 'Svg' }))?.props.source)
     expect(src.length, scene).toBeLessThanOrEqual(131072)
@@ -139,4 +141,24 @@ test('/skin lamb switches in English too', async ($, on) => {
   const out = await $.command.run({ command: 'skin', args: 'lamb' })
   expect(out.text).toBe('Switched to Meadow lamb.')
   expect(box.skin).toBe('meadow-sheep')
+})
+
+test('the duckling has a day, dusk and rain look; /skin dusk pins one, each stays under the limit', async ($, on) => {
+  const box = fakeStore(on)
+  on('theme.set', () => ({ value: { isDrawn: true } }))
+  on('clock.now', () => ({ value: new Date(2026, 10, 24, 12, 0).getTime() }))
+  await $.command.run({ command: 'skin', args: 'duck' })
+  expect(box.skin).toBe('pond-duck')
+  for (const lookId of ['day', 'dusk', 'rain']) {
+    await $.command.run({ command: 'skin', args: lookId })
+    expect(box.pin).toBe(lookId)
+    const ui = await $.ui.mount(backdrop('pond-duck'))
+    const src = String((await ui.find({ type: 'Svg' }))?.props.source)
+    expect(src.length, lookId).toBeLessThanOrEqual(131072)
+    // each look draws its own frames: the nightcap at dusk, the rain hat in the rain
+    expect(src).toContain(lookId === 'day' ? 'f-idle-0' : lookId === 'dusk' ? 'f-idleDusk-0' : 'f-idleRain-0')
+    await ui.unmount()
+  }
+  await $.command.run({ command: 'skin', args: 'auto' })
+  expect(box.pin).toBe('auto')
 })

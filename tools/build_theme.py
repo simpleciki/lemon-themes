@@ -170,7 +170,13 @@ def face_detail(im: Image.Image, scale: float, d: dict) -> str:
     return _trace(q, d.get('colors', 8), d.get('speck', 2))
 
 
-def shared_palette(frames, colors: int, median: int = 5) -> Image.Image:
+def shared_palette(frames, colors: int, median: int = 5, pin: list[str] | None = None) -> Image.Image:
+    """One palette for every frame of a sequence.
+
+    `pin` (`pin_colors` in theme-build.json): colours (#rrggbb) the palette must hold even when they cover little of the drawing,
+    such as a small hat whose colour a short palette would otherwise drop; they take slots from
+    the `colors` the median cut picks.
+    """
     strip = Image.new('RGB', (sum(f.width for f in frames), max(f.height for f in frames)), (255, 255, 255))
     x = 0
     for f in frames:
@@ -178,7 +184,23 @@ def shared_palette(frames, colors: int, median: int = 5) -> Image.Image:
         bg.paste(f.convert('RGB'), mask=f.getchannel('A').point(lambda v: 255 if v > 128 else 0))
         strip.paste(bg, (x, 0))
         x += f.width
-    return _soften(strip, median).quantize(colors=colors, method=Image.Quantize.MEDIANCUT)
+    pin = pin or []
+    pal = _soften(strip, median).quantize(colors=max(2, colors - len(pin)), method=Image.Quantize.MEDIANCUT)
+    if not pin:
+        return pal
+    rgb = (pal.getpalette() or [])[: 3 * max(2, colors - len(pin))]
+    for h in pin:
+        rgb += [int(h[i:i + 2], 16) for i in (1, 3, 5)]
+    return _palette_of(rgb)
+
+
+def _palette_of(rgb: list[int]) -> Image.Image:
+    """A P-mode image whose palette is exactly these colours, for Image.quantize(palette=...)."""
+    n = len(rgb) // 3
+    im = Image.new('P', (n, 1))
+    im.putpalette(rgb + rgb[-3:] * (256 - n))
+    im.putdata(list(range(n)))
+    return im
 
 
 # ---------- writing the plugin's data files ----------
@@ -220,7 +242,7 @@ def main(theme: str) -> None:
         found.sort(key=lambda f: f[1][0])
         floor = max(b[1] + b[3] for _, b in found)
         keep = [found[i] for i in s['keep']]
-        pal = shared_palette([f[0] for f in keep], s['colors'], s.get('median', 5))
+        pal = shared_palette([f[0] for f in keep], s['colors'], s.get('median', 5), s.get('pin_colors'))
         frames[name] = []
         for im, b in keep:
             t = trace_with_palette(im, s['scale'], pal, s['speck'], s.get('median', 5))
