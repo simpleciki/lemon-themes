@@ -3,3 +3,6 @@
 .DS_Store
 __pycache__/
 *.tmp-write
+
+# raw session transcripts stay local
+docs/session-archive/
