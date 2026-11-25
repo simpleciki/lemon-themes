@@ -185,3 +185,50 @@ test('every skin, awake, asleep and celebrating, stays under the limit and keeps
     expect(box.skin, s.id).toBe(s.id)
   }
 })
+
+test('/skin dark forces dark whatever the app is set to; light and system undo it', async ($, on) => {
+  const box = fakeStore(on)
+  const sets: unknown[] = []
+  on('theme.set', (_, e) => {
+    sets.push(e.overrideColorScheme)
+    return { value: { isDrawn: true } }
+  })
+  on('clock.now', () => ({ value: new Date(2026, 10, 24, 12, 0).getTime() }))
+  await $.command.run({ command: 'skin', args: '小羊' })
+
+  const out = await $.command.run({ command: 'skin', args: 'dark' })
+  expect(out.text).toContain('暗色')
+  expect(box.scheme).toBe('dark')
+  expect(sets.at(-1)).toBe('dark')
+  let ui = await $.ui.mount(backdrop('meadow-sheep'))
+  let src = String((await ui.find({ type: 'Svg' }))?.props.source)
+  expect(src).not.toContain('prefers-color-scheme')
+  expect(src).toContain('.bg{fill:#151c14}')
+  await ui.unmount()
+
+  await $.command.run({ command: 'skin', args: '亮色' })
+  expect(sets.at(-1)).toBe('light')
+  ui = await $.ui.mount(backdrop('meadow-sheep'))
+  src = String((await ui.find({ type: 'Svg' }))?.props.source)
+  expect(src).not.toContain('#151c14')
+  await ui.unmount()
+
+  await $.command.run({ command: 'skin', args: 'system' })
+  expect(box.scheme).toBe('auto')
+  expect(sets.at(-1)).toBeUndefined()
+  ui = await $.ui.mount(backdrop('meadow-sheep'))
+  src = String((await ui.find({ type: 'Svg' }))?.props.source)
+  expect(src).toContain('prefers-color-scheme: dark')
+  await ui.unmount()
+})
+
+test('the pane has an appearance row that saves the choice', async ($, on) => {
+  const box = fakeStore(on)
+  on('theme.set', () => ({ value: { isDrawn: true } }))
+  on('clock.now', () => ({ value: new Date(2026, 10, 24, 12, 0).getTime() }))
+  const pane = await $.ui.mount(PANE)
+  expect(await pane.find({ type: 'Text', text: '跟随系统 ✓' })).toBeDefined()
+  await pane.press({ key: 'scheme-dark' })
+  await pane.unmount()
+  expect(box.scheme).toBe('dark')
+})

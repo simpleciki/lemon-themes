@@ -17,6 +17,7 @@ import {
   resetText,
   short,
   stillSvg,
+  forceScheme,
   totalTokens,
 } from './format'
 import { cardFacts, cardSvg, cardText } from './card'
@@ -46,6 +47,8 @@ export const poke = atom({ plugin: 'lemon-themes', key: 'poke' } as const, null)
 export const lang = atom({ plugin: 'lemon-themes', key: 'lang' } as const, 'zh')
 // a skin with several looks: 'auto' follows the time, or the id of a look the person pinned
 export const pin = atom({ plugin: 'lemon-themes', key: 'pin' } as const, 'auto')
+// light or dark whatever the app is set to; 'auto' follows the app
+export const scheme = atom({ plugin: 'lemon-themes', key: 'scheme' } as const, 'auto')
 // the look the clock gives now, refreshed each minute so the backdrop redraws at 18:00 and 6:00
 export const look = atom({ plugin: 'lemon-themes', key: 'look' } as const, '')
 // the garden as last read from $.store (one row per local day); ok: false = could not be read
@@ -80,6 +83,12 @@ async function current($: Api): Promise<{ s: Skin; o: Options; lg: Lang; w: Word
   return { s: skinById(await read($, skin)), o: await read($, options), lg, w: WORDS[lg] }
 }
 
+async function useScheme($: Api, next: 'auto' | 'light' | 'dark') {
+  await update($, scheme, () => next)
+  await $.store.set('scheme', next)
+  await applyLook($, skinById(await read($, skin)))
+}
+
 async function usePin($: Api, next: string) {
   await update($, pin, () => next)
   await $.store.set('pin', next)
@@ -103,14 +112,16 @@ async function applyLook($: Api, s: Skin) {
   if (unpainted !== undefined) {
     $.ui.log(`lemon-themes/${s.id}: ${unpainted}`)
   }
+  const mode = await read($, scheme)
+  const forced = mode === 'auto' ? {} : { overrideColorScheme: mode }
   try {
-    const set = await $.theme.set(s.look)
+    const set = await $.theme.set({ ...s.look, ...forced })
     if (!set.isDrawn) {
       $.ui.log(`lemon-themes/${s.id}: ${set.reason}`)
     }
   } catch (error) {
     $.ui.log(`lemon-themes/${s.id}: style refused, using colours + scene only: ${String(error)}`)
-    await $.theme.set(s.base)
+    await $.theme.set({ ...s.base, ...forced })
   }
 }
 
@@ -282,6 +293,8 @@ export const register: Register = on => {
     await update($, lang, () => startLang)
     const savedPin = await $.store.get('pin')
     await update($, pin, () => (typeof savedPin === 'string' ? savedPin : 'auto'))
+    const savedScheme = await $.store.get('scheme')
+    await update($, scheme, () => (savedScheme === 'light' || savedScheme === 'dark' ? savedScheme : 'auto'))
     await applyLook($, skinById(await read($, skin)))
     shown = 'idle'
     await update($, busy, () => 'idle')
@@ -319,6 +332,11 @@ export const register: Register = on => {
     const { s, lg, w } = await current($)
     if (/^(en|english|英文|zh|chinese|中文)$/i.test(arg)) {
       return { text: lg === 'en' ? 'Language: English.' : '语言：中文。' }
+    }
+    const wanted = /^(dark|暗色|深色)$/i.test(arg) ? 'dark' : /^(light|亮色|浅色)$/i.test(arg) ? 'light' : /^(system|跟随系统)$/i.test(arg) ? 'auto' : null
+    if (wanted !== null) {
+      await useScheme($, wanted)
+      return { text: w.schemeSet(w.schemeNames[wanted]) }
     }
     if (/^(auto|自动)$/i.test(arg)) {
       await usePin($, 'auto')
@@ -466,7 +484,9 @@ export const register: Register = on => {
     const g = o.garden ? await read($, garden) : null
     const today = localDay(await $.clock.now())
     const flowers = g === null ? '' : gardenLayer(g, today, s.garden(variant), lg, SVG_LIMIT - scene.length - bubble.length)
-    const svg = overlay(scene, flowers + bubble)
+    const mode = await read($, scheme)
+    const drawn = overlay(scene, flowers + bubble)
+    const svg = mode === 'auto' ? drawn : forceScheme(drawn, mode)
 
     // One SVG: the app plays SMIL in a single backdrop Svg (two stacked layers stayed still).
     // isInteractive: without it the app did not pass clicks on the backdrop to ui.pointer.
@@ -592,6 +612,7 @@ export const register: Register = on => {
     const isRich = (e.surface === 'desktop' || e.surface === 'mobile') && 'Svg' in ui
     const now = await read($, skin)
     const pinNow = await read($, pin)
+    const schemeNow = await read($, scheme)
     const { o, lg, w } = await current($)
 
     return (
@@ -600,6 +621,18 @@ export const register: Register = on => {
           <Text weight="semibold">{w.language}</Text>
           {lg === 'zh' ? <Text dimColor>中文 ✓</Text> : <Button key="lang-zh" label="中文" onPress={() => useLang($, 'zh')} />}
           {lg === 'en' ? <Text dimColor>English ✓</Text> : <Button key="lang-en" label="English" onPress={() => useLang($, 'en')} />}
+        </Box>
+        <Box flexDirection="row" alignItems="center" gap={1}>
+          <Text weight="semibold">{w.appearance}</Text>
+          {(['auto', 'light', 'dark'] as const).map(m =>
+            schemeNow === m ? (
+              <Text key={`scheme-${m}`} dimColor>
+                {w.schemeNames[m]} ✓
+              </Text>
+            ) : (
+              <Button key={`scheme-${m}`} label={w.schemeNames[m]} onPress={() => useScheme($, m)} />
+            ),
+          )}
         </Box>
         <Text weight="semibold">{w.pickSkin}</Text>
         {SKINS.map(k => (

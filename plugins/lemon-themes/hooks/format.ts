@@ -64,6 +64,28 @@ export function stillSvg(svg: string): string {
   return svg.replace(/<animate(?:Transform|Motion)?\b[^>]*\/>/g, '')
 }
 
+const DARK_RULE = '@media (prefers-color-scheme: dark){'
+
+/** A scene drawn for one mode whatever the app's own: light drops each dark rule, dark keeps its
+ *  rules unconditionally (they sit after the light ones, so they win). */
+export function forceScheme(svg: string, mode: 'light' | 'dark'): string {
+  let out = ''
+  let i = 0
+  for (;;) {
+    const at = svg.indexOf(DARK_RULE, i)
+    if (at < 0) return out + svg.slice(i)
+    let depth = 1
+    let j = at + DARK_RULE.length
+    while (j < svg.length && depth > 0) {
+      if (svg[j] === '{') depth++
+      else if (svg[j] === '}') depth--
+      j++
+    }
+    out += svg.slice(i, at) + (mode === 'dark' ? svg.slice(at + DARK_RULE.length, j - 1) : '')
+    i = j
+  }
+}
+
 export function hash(text: string): number {
   let h = 0
   for (let i = 0; i < text.length; i++) h = (h * 31 + text.charCodeAt(i)) | 0
