@@ -462,7 +462,7 @@ export const register: Register = on => {
     // what is said: waiting for you first, then a line the mascot is saying, then worry or busy
     const state = o.status ? await read($, busy) : 'idle'
     const line = o.talk ? await read($, talk) : null
-    const bubble = state === 'wait' || line === null ? statusLayer(state, lg) : talkLayer(line.text)
+    const bubble = state === 'wait' || line === null ? statusLayer(state, lg, s.headTop) : talkLayer(line.text, s.headTop)
     const g = o.garden ? await read($, garden) : null
     const today = localDay(await $.clock.now())
     const flowers = g === null ? '' : gardenLayer(g, today, s.garden(variant), lg, SVG_LIMIT - scene.length - bubble.length)

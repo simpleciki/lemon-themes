@@ -35,16 +35,25 @@ const SHAKE = `<animateTransform attributeName="transform" type="translate" valu
 export const statusWhileCalling = (tool: string): Busy => (tool === 'AskUserQuestion' ? 'wait' : 'busy')
 
 /** The bubble for a state, or nothing when idle. */
-export function statusLayer(state: Busy, lang: Lang): string {
-  if (state === 'busy') return strip(bubble(190, 600, 104, '#fffdf6', '#d8c9b0', dots))
+// The bubbles were drawn for a mascot whose head tops out at y 676; each skin moves them to its own.
+const at = (headTop: number, body: string) => (body === '' ? '' : strip(`<g transform="translate(0 ${Math.round(headTop - 676)})">${body}</g>`))
+
+/** The bubble for a state, standing on a head that tops out at `headTop`, or nothing when idle. */
+export function statusLayer(state: Busy, lang: Lang, headTop = 676): string {
+  const inner = statusBody(state, lang)
+  return at(headTop, inner)
+}
+
+function statusBody(state: Busy, lang: Lang): string {
+  if (state === 'busy') return (bubble(190, 600, 104, '#fffdf6', '#d8c9b0', dots))
   if (state === 'wait') {
     const text = `<text x="0" y="36" text-anchor="middle" font-family="sans-serif" font-size="24" font-weight="700" fill="#5a4630">${WORDS[lang].wait}</text>`
-    return strip(bubble(180, 596, lang === 'zh' ? 128 : 170, '#fff4c9', '#e2b33c', text, WAVE))
+    return (bubble(180, 596, lang === 'zh' ? 128 : 170, '#fff4c9', '#e2b33c', text, WAVE))
   }
   if (state === 'worry') {
     const text = `<text x="0" y="40" text-anchor="middle" font-family="sans-serif" font-size="34" font-weight="800" fill="#c0392b">!</text>`
     const sweat = `<path d="M262 660 C252 676 254 688 264 688 C274 688 276 676 262 660Z" fill="#9fd3f0" stroke="#5b9cc4" stroke-width="2"/>`
-    return strip(bubble(200, 600, 64, '#fff0ec', '#e58a7a', text, SHAKE) + sweat)
+    return (bubble(200, 600, 64, '#fff0ec', '#e58a7a', text, SHAKE) + sweat)
   }
   return ''
 }

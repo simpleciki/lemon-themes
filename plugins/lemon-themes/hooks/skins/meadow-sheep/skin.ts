@@ -90,6 +90,7 @@ export const MEADOW_SHEEP: Skin = {
   badge: BADGE,
   ink: { heading: '#5f8a3a', gauge: '#5f9a3a', border: '#a9cf7d', ok: '#4f8a3a' },
   emoji: { title: '🌱🐑', mascot: '🐑', context: '🥛', token: '🧶', agents: '🦋' },
+  headTop: 705,
   garden: () => ({ flower: 'daisy', bush: 'blossom', landmark: 'tree', bloom: 'clover', size: sizeOf, def: defOf, ink: '#5f8a3a' }),
   cheers: {
     praise: { zh: ['小羊收到夸夸啦，开心蹦了一下！', '草地上的小花都开了～', '这个点子软软的，好喜欢！'], en: ['The lamb got a compliment and does a little hop!', 'All the meadow flowers just opened~', 'Such a soft, lovely idea!'] },
