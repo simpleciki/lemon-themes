@@ -5,7 +5,7 @@
 import { atom, read, update } from 'claude-code'
 import type { Hook, Register, RenderChildren } from 'claude-code'
 
-import type { Options, Poke, Snap, Tokens } from '../types'
+import type { Busy, Garden, Options, Poke, Snap, Tokens } from '../types'
 import {
   cells,
   effortText,
@@ -19,11 +19,13 @@ import {
   stillSvg,
   totalTokens,
 } from './format'
+import { EMPTY_GARDEN, GARDEN_KEY, SVG_LIMIT, gardenLayer, localDay, overlay, parseGarden, plant, storedGarden, totals } from './garden'
 import { WORDS, langFromEnv, pick } from './i18n'
 import type { Lang, Words } from './i18n'
 import { SKINS, skinById } from './skins/index'
 import type { Cheer, Skin } from './skins/skin'
 import { DEFAULT_OPTIONS, SWITCHES, savedOptions } from './state'
+import { statusLayer, statusWhileCalling } from './status'
 
 type Api = Parameters<Hook<'session.start'>>[0]
 
@@ -44,6 +46,10 @@ export const lang = atom({ plugin: 'lemon-themes', key: 'lang' } as const, 'zh')
 export const pin = atom({ plugin: 'lemon-themes', key: 'pin' } as const, 'auto')
 // the look the clock gives now, refreshed each minute so the backdrop redraws at 18:00 and 6:00
 export const look = atom({ plugin: 'lemon-themes', key: 'look' } as const, '')
+// the garden as last read from $.store (one row per local day); ok: false = could not be read
+export const garden = atom({ plugin: 'lemon-themes', key: 'garden' } as const, EMPTY_GARDEN)
+// what the mascot shows Claude doing
+export const busy = atom({ plugin: 'lemon-themes', key: 'busy' } as const, 'idle')
 
 
 const PRAISE = /(太好了|太棒|好棒|很棒|真棒|棒棒|好主意|好点子|完美|厉害|绝了|好看|喜欢|可爱|nice|great|awesome|perfect|love it|amazing|well done)/i
@@ -56,6 +62,10 @@ const SKIN_PANE = 'lemon-themes-skins'
 // Assumed exchange rate for the CNY line; shown on the pane as an assumption.
 const USD_TO_CNY = 7.1
 const SCENES = new Set(SKINS.map(s => s.id))
+const TESTS = /\b(npm|pnpm|yarn|bun)\s+(run\s+)?test\b|\bpytest\b|\bvitest\b|\bjest\b|\bcargo\s+test\b|\bgo\s+test\b|\bclaude\s+plugin\s+test\b|\/claude\s+plugin\s+test\b/
+const COMMIT = /\bgit\s+commit\b/
+// How long the worried face stays after a failed tool, before it goes back to busy.
+const WORRY_MS = 5000
 
 async function current($: Api): Promise<{ s: Skin; o: Options; lg: Lang; w: Words }> {
   const lg: Lang = (await read($, lang)) === 'en' ? 'en' : 'zh'
@@ -138,6 +148,54 @@ function hit(x: number, y: number): 'mascot' | 'pop' {
   return y > 0.55 && x > 0.85 ? 'mascot' : 'pop'
 }
 
+/** Reads the garden from the store; an unreadable one is kept as { ok: false }, never as empty. */
+async function readGarden($: Api): Promise<Garden> {
+  try {
+    return parseGarden(await $.store.get(GARDEN_KEY))
+  } catch {
+    return { ok: false, days: {}, why: 'read' }
+  }
+}
+
+/** One more flower (a commit) or patch (an all-green test run) on today's row. Reads the store
+ *  again first, so two sessions open at once both count; writes nothing over an unreadable record. */
+async function recordGarden($: Api, what: 'commit' | 'green') {
+  const fresh = await readGarden($)
+  if (!fresh.ok) {
+    await update($, garden, () => fresh)
+    return
+  }
+  const grown = plant(fresh, localDay(await $.clock.now()), what)
+  try {
+    await $.store.set(GARDEN_KEY, storedGarden(grown))
+    await update($, garden, () => grown)
+  } catch {
+    await update($, garden, () => ({ ...grown, ok: false, why: 'write' as const }))
+  }
+}
+
+// What the bubble shows now, kept here and not read back from `busy`: reads in one dispatch see
+// the moment it started, and a permission prompt changes the bubble in the middle of a tool call.
+let shown: Busy = 'idle'
+let worryN = 0
+async function setBusy($: Api, next: Busy) {
+  if (shown === next) return
+  shown = next
+  await update($, busy, () => next)
+  if (next === 'wait') await update($, isAsleep, () => false)
+}
+
+/** A failure: the worried face for a few seconds, then back to busy if nothing else came since. */
+async function worry($: Api) {
+  const mine = ++worryN
+  await setBusy($, 'worry')
+  $.clock.after(WORRY_MS, () => {
+    void (async () => {
+      if (worryN === mine && shown === 'worry') await setBusy($, 'busy')
+    })()
+  })
+}
+
 async function refresh($: Api) {
   const [usage, model, agents] = await Promise.all([$.session.usage(), $.session.model(), $.agent.list()])
   const next: Snap = {
@@ -168,6 +226,7 @@ export const register: Register = on => {
   on('prompt.submit', async ($, e, next) => {
     lastActive = await $.clock.now()
     await update($, isAsleep, () => false)
+    await setBusy($, 'busy')
     if (PRAISE.test(e.text)) {
       await celebrate($, 'praise')
     }
@@ -188,6 +247,10 @@ export const register: Register = on => {
     const savedPin = await $.store.get('pin')
     await update($, pin, () => (typeof savedPin === 'string' ? savedPin : 'auto'))
     await applyLook($, skinById(await read($, skin)))
+    shown = 'idle'
+    await update($, busy, () => 'idle')
+    const g = await readGarden($)
+    await update($, garden, () => g)
 
     await $.command.register({ name: 'skin', description: WORDS[startLang].commandHelp })
     await refresh($)
@@ -256,12 +319,22 @@ export const register: Register = on => {
     if (e.tool === 'Agent') {
       await update($, agentCalls, n => n + 1)
     }
+    // a question Claude asks you holds the call until you answer: wave meanwhile
+    await setBusy($, statusWhileCalling(e.tool))
     const ran = await next(e)
+    if (ran.isError === true && ran.deny === undefined) {
+      await worry($)
+    } else {
+      // the prompt or question was answered: back to work
+      await setBusy($, 'busy')
+    }
     if (e.tool === 'Bash' && ran.deny === undefined && ran.isError !== true) {
       const cmd = e.command
-      if (/\bgit\s+commit\b/.test(cmd)) {
+      if (COMMIT.test(cmd)) {
+        await recordGarden($, 'commit')
         await celebrate($, 'commit')
-      } else if (/\b(npm|pnpm|yarn|bun)\s+(run\s+)?test\b|\bpytest\b|\bvitest\b|\bjest\b|\bcargo\s+test\b|\bgo\s+test\b/.test(cmd)) {
+      } else if (TESTS.test(cmd)) {
+        await recordGarden($, 'green')
         await celebrate($, 'tests')
       }
     }
@@ -286,17 +359,28 @@ export const register: Register = on => {
     return next(e)
   })
 
+  // A permission prompt is about to ask you: the mascot waves until the call goes on (tool.call above).
+  on('classic.PermissionRequest', async ($, e, next) => {
+    await setBusy($, 'wait')
+    return next(e)
+  })
+
   // The thinking effort the main conversation's latest request carried.
   on('turn.step', async function* ($, e, next) {
     if (e.agentId === undefined) {
       const level = e.effort === undefined ? null : String(e.effort)
       await update($, effort, () => level)
+      if (shown !== 'worry') await setBusy($, 'busy')
     }
 
     return yield* next(e)
   })
 
   on('turn.complete', async ($, e, next) => {
+    if (e.agentId === undefined) {
+      if (e.reason === 'error') await worry($)
+      else await setBusy($, 'idle')
+    }
     const u = e.usage
     if (u !== undefined) {
       await update($, tokens, t => ({
@@ -322,7 +406,14 @@ export const register: Register = on => {
     const asleep = o.nap && (await read($, isAsleep))
     const p = o.cheers && o.motion ? await read($, poke) : null
     await read($, look) // redraw when the clock moves to another look
-    const svg = s.scene(asleep, p, !o.motion, o.floaters, await lookOf($, s))
+    const variant = await lookOf($, s)
+    const scene = s.scene(asleep, p, !o.motion, o.floaters, variant)
+    // the status bubble, then the garden in whatever room is left under the app's limit
+    const bubble = o.status ? statusLayer(await read($, busy), lg) : ''
+    const g = o.garden ? await read($, garden) : null
+    const today = localDay(await $.clock.now())
+    const flowers = g === null ? '' : gardenLayer(g, today, s.garden(variant), lg, SVG_LIMIT - scene.length - bubble.length)
+    const svg = overlay(scene, flowers + bubble)
 
     // One SVG: the app plays SMIL in a single backdrop Svg (two stacked layers stayed still).
     // isInteractive: without it the app did not pass clicks on the backdrop to ui.pointer.
@@ -501,6 +592,23 @@ export const register: Register = on => {
                   <Button key={`look-${v.id}`} label={pick(v.name, lg)} onPress={() => usePin($, v.id)} />
                 ),
               )}
+            </Box>
+          )
+        })()}
+        {await (async () => {
+          const g = await read($, garden)
+          const t = totals(g, localDay(await $.clock.now()))
+          return (
+            <Box flexDirection="column">
+              <Text weight="semibold">{w.gardenTitle}</Text>
+              {g.ok ? (
+                <Text>{w.gardenStats(t.commits, t.today[0], t.green, t.days)}</Text>
+              ) : (
+                <Text color="danger">{g.why === 'write' ? w.gardenUnwritable : w.gardenUnreadable}</Text>
+              )}
+              <Text dimColor size="footnote">
+                {w.gardenLocal}
+              </Text>
             </Box>
           )
         })()}

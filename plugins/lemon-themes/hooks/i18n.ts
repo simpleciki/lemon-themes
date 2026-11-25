@@ -76,6 +76,12 @@ const zh = {
   reset: (when: string) => `${when} 重置`,
   weekdays: ['周日', '周一', '周二', '周三', '周四', '周五', '周六'],
   yay: '耶！',
+  gardenTitle: '🌼 陪伴花园',
+  gardenStats: (c: number, today: number, green: number, days: number) =>
+    c + green === 0 ? '还没种下花：下一次成功的 git commit 会种第一朵，测试全绿会开一小片。' : `共种了 ${c} 朵花（今天 +${today}），测试全绿 ${green} 次，记了 ${days} 天。每 10 朵长成花丛，每 100 朵草地升一级。`,
+  gardenUnreadable: '读不到花园记录。这次先不记、不画，免得盖掉你以前种的花。',
+  gardenUnwritable: '花园记录存不进去，这次的花没有记下。',
+  gardenLocal: '只存在你自己的电脑上（每天一行小结）。',
 }
 
 export type Words = typeof zh
@@ -145,6 +151,12 @@ const en: Words = {
   reset: (when: string) => `resets ${when}`,
   weekdays: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
   yay: 'Yay!',
+  gardenTitle: '🌼 Companion garden',
+  gardenStats: (c: number, today: number, green: number, days: number) =>
+    c + green === 0 ? 'Nothing planted yet: your next successful git commit plants the first flower, an all-green test run opens a patch.' : `${c} flowers planted (+${today} today), ${green} all-green test runs, over ${days} days. Every 10 flowers grow into a bush, every 100 the meadow levels up.`,
+  gardenUnreadable: "Can't read your garden records. Nothing is counted or drawn this time, so your old flowers are not written over.",
+  gardenUnwritable: "Can't save your garden records: these flowers were not kept.",
+  gardenLocal: 'Kept only on your own computer (one line per day).',
 }
 
 export const WORDS: Record<Lang, Words> = { zh, en }

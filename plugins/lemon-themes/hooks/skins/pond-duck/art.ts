@@ -14,6 +14,7 @@ const def = (name: string) => {
 }
 
 const size = (name: string) => SPRITES[name] ?? { w: 0, h: 0, body: '' }
+export const sizeOf = size
 
 const use = (name: string) => {
   const s = size(name)

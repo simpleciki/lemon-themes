@@ -4,6 +4,7 @@
 import type { ThemeSetArgs } from 'claude-code'
 
 import type { Poke } from '../../types'
+import type { GardenKit } from '../garden'
 import type { L } from '../i18n'
 
 export type Cheer = 'praise' | 'commit' | 'tests' | 'yay'
@@ -46,5 +47,7 @@ export type Skin = {
   ink: { heading: string; gauge: string; border: string; ok: string }
   /** Emoji on the pane's cards (the terminal shows these instead of icons). */
   emoji: { title: string; mascot: string; context: string; token: string; agents: string }
+  /** What the garden plants on this skin's bank, for a look (see variants). */
+  garden: (variant?: string) => GardenKit
   cheers: Record<Cheer, { zh: string[]; en: string[] }>
 }
