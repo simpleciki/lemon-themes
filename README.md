@@ -81,6 +81,27 @@
 </tr>
 </table>
 
+## 池塘小鸭 pond-duck
+
+油画棒蜡笔风：两边是长着芦苇、荷叶的小池塘。小鸭的样子跟着时间变：白天在池塘边啄草，傍晚 6 点后戴上睡帽、萤火虫飞起来，偶尔下雨就戴雨帽、踩水坑。在 `/skin` 里也可以固定成其中一种。
+
+<table>
+<tr>
+<td align="center" width="33%">
+<img src="assets/pond-duck/state-day.svg" alt="白天：小鸭站在池塘边" width="100%">
+<br><b>白天</b><br><sub>啄草、眨眼，荷花和蜻蜓</sub>
+</td>
+<td align="center" width="33%">
+<img src="assets/pond-duck/state-dusk.svg" alt="傍晚：小鸭戴着紫色睡帽" width="100%">
+<br><b>傍晚</b><br><sub>6 点后戴睡帽，月亮和萤火虫</sub>
+</td>
+<td align="center" width="33%">
+<img src="assets/pond-duck/state-rain.svg" alt="下雨天：小鸭戴着雨帽" width="100%">
+<br><b>下雨天</b><br><sub>戴雨帽，彩虹、蘑菇和水坑</sub>
+</td>
+</tr>
+</table>
+
 ## 换皮肤和开关：`/skin`
 
 <img src="assets/skin-pane.png" alt="/skin 面板：选柠檬小熊或草地小羊，下面是 6 个开关和「全部打开」「省电模式」" width="560">
@@ -89,9 +110,11 @@
 - **选皮肤**：点「换成这个」当场换。
 - **8 个开关**：背景动画、飘浮贴纸、气泡上的小贴纸、用量条、庆祝和点击特效、陪伴花园、吉祥物报状态、吉祥物打盹。电脑比较慢就点「省电模式」，一次关掉动画、飘浮贴纸和特效。
 - **陪伴花园**：每次成功的 `git commit` 在左边草坡种一朵花，测试全绿开一小片；每 10 朵长成花丛，每 100 朵草地升一级。面板里有一行统计。记录只存在你自己的电脑上，每天一行小结；读不到记录时会直接写「读不到花园记录」，不会假装是空草地。
+<img src="assets/pond-duck/garden-zh.svg" alt="左边草坡上种满了花，写着「🌼 137 · 第 2 片草地」；右边小鸭头上冒着「👋 等你」" width="100%">
+
 - **吉祥物报状态**：Claude 在想或在跑工具时冒「…」小气泡，等你批准或回答问题时冒「👋 等你」，工具出错时冒「!」担心一下。
 - **设置会记住**，下次打开 App 还在。
-- 命令：`/skin 小羊`、`/skin 小熊` 直接换，`/skin usage` 看用量面板，`/skin nap` 让吉祥物马上睡。
+- 命令：`/skin 小羊`、`/skin 小熊`、`/skin 小鸭` 直接换，`/skin day`、`/skin dusk`、`/skin rain` 固定小鸭的样子（`/skin auto` 放开），`/skin usage` 看用量面板，`/skin nap` 让吉祥物马上睡。
 
 ## 安装
 
@@ -111,7 +134,7 @@ claude plugin install lemon-themes --marketplace simpleciki/lemon-themes
 
 桌面 App 里 `/plugin` 不能用：点输入框旁边的 +，选 Plugins，Add marketplace 填 `simpleciki/lemon-themes`，再 Add plugin。
 
-装好后新开的会话就是柠檬小熊，输入 `/skin` 换成草地小羊。背景只在桌面 App 和手机 App 上显示；终端里只有用量条。
+装好后新开的会话就是柠檬小熊，输入 `/skin` 换成草地小羊或池塘小鸭。背景只在桌面 App 和手机 App 上显示；终端里只有用量条。
 
 已经装了旧的 `lemon-bear` 插件？先停用它（`claude plugin disable lemon-bear@lemon-themes`）再装 `lemon-themes`，不然两个插件会抢背景。
 
