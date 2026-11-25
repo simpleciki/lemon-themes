@@ -77,7 +77,7 @@ export function weatherAt(ms: number): Weather {
 
 const LOOKS: Record<Weather, { bg: string; hatch: string; bank: string; water: string; darkBg: string; darkBank: string; darkWater: string }> = {
   day: { bg: '#f7f8f0', hatch: '#e6ecd2', bank: '#cfe6a6', water: '#bfe3f2', darkBg: '#141b18', darkBank: '#2c3b22', darkWater: '#1f3640' },
-  dusk: { bg: '#efeaf6', hatch: '#e0d8ee', bank: '#bcd9a8', water: '#c7cdf0', darkBg: '#17142a', darkBank: '#26341f', darkWater: '#262d52' },
+  dusk: { bg: '#f8f1f6', hatch: '#efdfec', bank: '#c6e6a0', water: '#cdd6fa', darkBg: '#17142a', darkBank: '#26341f', darkWater: '#262d52' },
   rain: { bg: '#eef3f6', hatch: '#dde7ee', bank: '#c5e0a4', water: '#b6d9ee', darkBg: '#121a20', darkBank: '#29391f', darkWater: '#1d3444' },
 }
 

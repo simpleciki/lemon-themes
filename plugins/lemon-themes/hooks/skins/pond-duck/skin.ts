@@ -10,9 +10,9 @@ const { theme, problems } = makeColors({
   light: {
     gray: {
       anchors: {
-        'surface-0': '#f7f8f0',
-        'surface-1': '#fbfbf5',
-        'surface-2': '#fefefb',
+        'surface-0': '#faf8f4',
+        'surface-1': '#fcfbf8',
+        'surface-2': '#fefefd',
         'text-primary': '#2d3440',
         'text-secondary': '#4a5260',
         'text-muted': '#636b78',
