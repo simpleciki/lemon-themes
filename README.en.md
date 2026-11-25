@@ -104,7 +104,7 @@ Oil-pastel crayon: a little pond on each side with reeds and lily pads. The duck
 
 ## Switch skins, switch things off: `/skin`
 
-<img src="assets/skin-pane.png" alt="The /skin pane: pick the lemon bear or the meadow lamb, then six switches and two shortcut buttons" width="560">
+<img src="assets/skin-pane-en.png" alt="The /skin pane: language, the lemon bear, meadow lamb or pond duckling, the duckling's look, the garden's totals, then nine switches and two shortcut buttons" width="560">
 
 Type `/skin` (or press 皮肤 on the usage band) to open the pane:
 - **Pick a skin**: it changes on the spot.

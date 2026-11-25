@@ -159,7 +159,7 @@ const en: Words = {
   yay: 'Yay!',
   gardenTitle: '🌼 Companion garden',
   gardenStats: (c: number, today: number, green: number, days: number) =>
-    c + green === 0 ? 'Nothing planted yet: your next successful git commit plants the first flower, an all-green test run opens a patch.' : `${c} flowers planted (+${today} today), ${green} all-green test runs, over ${days} days. Every 10 flowers grow into a bush, every 100 the meadow levels up.`,
+    c + green === 0 ? 'Nothing planted yet: your next successful git commit plants the first flower, an all-green test run opens a patch.' : `${c} flowers planted (+${today} today), ${green} all-green test runs, over ${days} day${days === 1 ? '' : 's'}. Every 10 flowers grow into a bush, every 100 the meadow levels up.`,
   gardenUnreadable: "Can't read your garden records. Nothing is counted or drawn this time, so your old flowers are not written over.",
   gardenUnwritable: "Can't save your garden records: these flowers were not kept.",
   gardenLocal: 'Kept only on your own computer (one line per day).',
