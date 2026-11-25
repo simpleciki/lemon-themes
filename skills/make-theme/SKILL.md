@@ -12,6 +12,14 @@ skin in `skins/index.ts`.
 
 Read `docs/LESSONS.md` first: it lists what the app will and will not play.
 
+## Code-drawn skins (pixel art, flat vector): no image tool needed
+
+A skin drawn as code skips steps 2-3 below. Copy `skins/pixel-cat/skin.ts` (pixel art: each sprite is a
+character grid, `kit/pixel.ts` turns it into vector paths) or `skins/flat-whale/skin.ts` (hand-written SVG
+shapes), fill in a `SkinSpec` and pass it to `makeSkin` from `kit/factory.ts`, which builds the scene,
+stickers, icons and the Skin. These come to 20-70K characters, far under the limit. Ask the person for a
+reference picture of the mascot style first: the first pixel cat, drawn without one, did not look like a cat.
+
 ## 1. Settle the look with the person
 
 - Ask for one or two reference pictures of the style they like. Describe what you see back to them

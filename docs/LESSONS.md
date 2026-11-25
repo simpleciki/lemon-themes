@@ -118,3 +118,14 @@ Each line is something we tried, saw fail in the app, and fixed. Check them agai
   skin's `badge` inside another picture, drop its own `width`/`height` before giving it new ones.
 - **A plugin has no way to make a PNG**: `$.ui.copy` takes text only and `$.fs.write` writes text. A card
   to post is drawn as an `Svg` in a pane and shared as a screenshot.
+
+## Code-drawn skins (pixel and vector, November 2026)
+
+- **Pixel art and hand-written SVG are the backdrop's own format**: no tracing, 20-70K characters per
+  backdrop where a traced skin takes 110-128K. `skins/kit/factory.ts` builds a whole skin from a `SkinSpec`.
+- **Draw a pixel mascot from a reference.** Ciki's reference cat: a big square head with the ears on its
+  corners, each eye one blue pixel over one black, a single black pixel for the nose on the black row,
+  two whiskers a side poking past the head, a narrower body, a tail curling up. A cat drawn from memory
+  (flat head, two nostrils) did not read as a cat.
+- **Sprites have no dark mode of their own**: colours inside a sprite stay as drawn. A line drawing gets a
+  pale halo under its ink so it still reads on a dark background.

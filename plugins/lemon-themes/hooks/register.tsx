@@ -348,7 +348,10 @@ export const register: Register = on => {
       return { text: w.napping(pick(s.mascot, lg)) }
     }
     const a = arg.toLowerCase()
-    const chosen = SKINS.find(k => a !== '' && (k.id === a || k.aliases.some(x => a.includes(x.toLowerCase())) || k.name.zh.includes(arg)))
+    // an exact id first (line-cat must not land on pixel-cat by the word "cat"), then words
+    const chosen =
+      SKINS.find(k => k.id === a) ??
+      SKINS.find(k => a !== '' && (k.aliases.some(x => a.includes(x.toLowerCase())) || k.name.zh.includes(arg)))
     if (chosen !== undefined) {
       await useSkin($, chosen.id)
       return { text: w.switched(pick(chosen.name, lg)) }
