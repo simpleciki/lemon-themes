@@ -1,0 +1,25 @@
+{
+  "theme": "paper-rabbit",
+  "out": "plugins/lemon-themes/hooks/skins/paper-rabbit/traced",
+  "sheets": {
+    "seq": {
+      "file": "seq-chibi.png",
+      "alpha_cut": 200
+    }
+  },
+  "sprites": {},
+  "sequences": {
+    "all": {
+      "sheet": "seq",
+      "keep": [
+        0,
+        1,
+        2
+      ],
+      "scale": 0.42,
+      "colors": 7,
+      "speck": 3,
+      "median": 1
+    }
+  }
+}

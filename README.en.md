@@ -102,6 +102,17 @@ Oil-pastel crayon: a little pond on each side with reeds and lily pads. The duck
 </tr>
 </table>
 
+## More skins: pixel and vector
+
+Every backdrop is drawn in code, far lighter than the three above (25-70K characters each); the mascots
+are drawn by Codex and copied exactly by code.
+
+| Pixel | Vector |
+|---|---|
+| Rooftop pixel cat (white, blue eyes), forest pixel fox, ice pixel penguin, street pixel shiba | Paper moon rabbit, little black cat, flat little whale |
+
+On the [try-on page](https://simpleciki.github.io/lemon-themes/), pick any of them from the row of names.
+
 ## Switch skins, switch things off: `/skin`
 
 <img src="assets/skin-pane-en.png" alt="The /skin pane: language, the lemon bear, meadow lamb or pond duckling, the duckling's look, the garden's totals, then nine switches and two shortcut buttons" width="560">

@@ -1,6 +1,8 @@
 import { expect, test } from 'claude-code/testing'
 import type { On } from 'claude-code/testing'
 
+import { SKINS } from '../hooks/skins/index'
+
 // An in-memory $.store whose writes the test can read back.
 function fakeStore(on: On, start: Record<string, unknown> = {}) {
   const box: Record<string, unknown> = { ...start }
@@ -97,7 +99,7 @@ test('the awake backdrop of every skin stays under the app limit of 131,072 char
   fakeStore(on)
   // noon on an ordinary day: the duckling's sunny look
   on('clock.now', () => ({ value: new Date(2026, 10, 24, 12, 0).getTime() }))
-  for (const scene of ['lemon-bear', 'meadow-sheep', 'pond-duck']) {
+  for (const scene of SKINS.map(s => s.id)) {
     const ui = await $.ui.mount(backdrop(scene))
     const src = String((await ui.find({ type: 'Svg' }))?.props.source)
     expect(src.length, scene).toBeLessThanOrEqual(131072)
@@ -164,4 +166,22 @@ test('the duckling has a day, dusk and rain look; /skin dusk pins one, each stay
   }
   await $.command.run({ command: 'skin', args: 'auto' })
   expect(box.pin).toBe('auto')
+})
+
+test('every skin, awake, asleep and celebrating, stays under the limit and keeps its own words', async ($, on) => {
+  const box = fakeStore(on)
+  on('clock.now', () => ({ value: new Date(2026, 10, 24, 12, 0).getTime() }))
+  on('theme.set', () => ({ value: { isDrawn: true } }))
+  const ids = new Set<string>()
+  for (const s of SKINS) {
+    expect(ids.has(s.id), s.id).toBe(false)
+    ids.add(s.id)
+    for (const src of [s.scene(false, null, false, true), s.scene(true, null, false, true), s.scene(false, { what: 'party', n: 1 }, false, true)]) {
+      expect(src.length, s.id).toBeLessThanOrEqual(131072)
+      expect(src, s.id).not.toContain('<image')
+    }
+    // /skin <id> lands on this skin, not on another whose word is inside the id (line-cat vs cat)
+    await $.command.run({ command: 'skin', args: s.id })
+    expect(box.skin, s.id).toBe(s.id)
+  }
 })

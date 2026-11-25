@@ -115,9 +115,11 @@ const FRONT: Slot[] = [
 ]
 const PATCH: Slot[] = [['L', 70, 984], ['L', 200, 984], ['L', 330, 984], ['R', 40, 986], ['L', 135, 986], ['R', 110, 986]]
 
+// k is for a sprite about 100 units across (the traced skins); a pixel sprite of 16 is scaled up to match
 const put = (kit: GardenKit, name: string, x: number, y: number, k: number) => {
   const s = kit.size(name)
-  return `<use href="#s-${name}" x="${Math.round(-s.w / 2)}" y="${-s.h}" transform="translate(${x} ${y}) scale(${k})"/>`
+  const sk = +(k * (100 / Math.max(1, s.w, s.h))).toFixed(3)
+  return `<use href="#s-${name}" x="${Math.round(-s.w / 2)}" y="${-s.h}" transform="translate(${x} ${y}) scale(${sk})"/>`
 }
 
 const side = (which: 'L' | 'R', body: string) =>
