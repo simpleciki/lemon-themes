@@ -242,11 +242,17 @@ const SKIN_DEFS = [
     light: '.bg{fill:#f5f8ec}.hatch{opacity:.55}.hill{fill:#cfe6a6}', dark: '.bg{fill:#151c14}.hatch{opacity:.12}.hill{fill:#2c3b22}' },
 ]
 const SKINS: Record<string, unknown> = {}
+// the backdrops as the app draws them (following the system's light or dark), for the README pictures
+const RAW: Record<string, Record<string, string>> = {}
 for (const d of SKIN_DEFS) {
   const art = await import(join(ROOT, 'plugins', 'lemon-themes', 'hooks', 'skins', d.id, 'art.ts'))
+  RAW[d.id] = { sit: art.scene(false), sleep: art.scene(true) }
   SKINS[d.id] = {
     cls: d.cls, name: d.name, light: d.light, dark: d.dark,
-    scenes: { sit: art.scene(false), sleep: art.scene(true), bear: art.scene(false, { what: 'mascot', n: 1 }), party: art.scene(false, { what: 'party', n: 2 }) },
+    // The page has its own dark button: drop the scene's own "follow the system" rule, or a dark
+    // system turns the meadow dark under a light page.
+    scenes: Object.fromEntries(Object.entries({ sit: art.scene(false), sleep: art.scene(true), bear: art.scene(false, { what: 'mascot', n: 1 }), party: art.scene(false, { what: 'party', n: 2 }) })
+      .map(([k, v]) => [k, (v as string).replace(/@media \(prefers-color-scheme: dark\)\{(?:[^{}]*\{[^{}]*\})*\}/g, '')])),
     pops: d.pops.map(k => uri(art.STICKERS[k])),
     msg: d.msg.map(k => uri(art.STICKERS[k])),
     badge: uri(art.BADGE),
@@ -447,7 +453,7 @@ const inside = (s: string) => s.slice(s.indexOf('>') + 1, s.lastIndexOf('</svg>'
 const frame = (s: string, vb: string, w: number, h: number) =>
   `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${vb}" width="${w}" height="${h}"><svg x="0" y="0" width="1400" height="820">${inside(s)}</svg></svg>`
 for (const d of SKIN_DEFS.filter(x => x.id !== 'lemon-bear')) {
-  const k = SKINS[d.id] as { scenes: Record<string, string> }
+  const k = { scenes: RAW[d.id] ?? {} }
   const dir = join(ROOT, 'assets', d.id)
   mkdirSync(dir, { recursive: true })
   const card = (name: string) => frame(k.scenes[name] ?? '', '1080 500 320 320', 320, 320)
