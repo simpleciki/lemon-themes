@@ -25,7 +25,11 @@ export type Options = {
   nap: boolean
   garden: boolean
   status: boolean
+  talk: boolean
 }
+
+/** A line the mascot is saying; n tells one line from the next. */
+export type Talk = { text: string; n: number }
 
 /** The garden as read from $.store: one row per local day, [commits, green test runs]. */
 export type Garden = { ok: boolean; days: Record<string, [number, number]>; why?: 'read' | 'write' }
@@ -64,6 +68,7 @@ declare module 'claude-code' {
       look: string
       garden: Garden
       busy: Busy
+      talk: Talk | null
     }
   }
 }
