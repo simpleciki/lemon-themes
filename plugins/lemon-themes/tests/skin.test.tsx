@@ -110,3 +110,33 @@ test('a scene that is not ours is left to the engine', async ($, on) => {
   expect((await ui.find({ type: 'Text' }))?.text).toBe('engine')
   await ui.unmount()
 })
+
+test('/skin en turns the pane, switches and skin names to English, and saves the choice', async ($, on) => {
+  const box = fakeStore(on)
+
+  const out = await $.command.run({ command: 'skin', args: 'en' })
+  expect(out.text).toBe('Language: English.')
+  expect(box.lang).toBe('en')
+
+  const pane = await $.ui.mount(PANE)
+  expect(await pane.find({ type: 'Text', text: 'Pick a skin' })).toBeDefined()
+  expect(await pane.find({ type: 'Text', text: 'Meadow lamb' })).toBeDefined()
+  expect(await pane.find({ type: 'Text', text: 'Backdrop motion' })).toBeDefined()
+  expect(await pane.find({ type: 'Text', text: '选皮肤' })).toBeUndefined()
+  await pane.press({ key: 'lang-zh' })
+  await pane.unmount()
+
+  expect(box.lang).toBe('zh')
+  const again = await $.ui.mount(PANE)
+  expect(await again.find({ type: 'Text', text: '选皮肤' })).toBeDefined()
+  await again.unmount()
+})
+
+test('/skin lamb switches in English too', async ($, on) => {
+  const box = fakeStore(on)
+  on('theme.set', () => ({ value: { isDrawn: true } }))
+  await $.command.run({ command: 'skin', args: 'english' })
+  const out = await $.command.run({ command: 'skin', args: 'lamb' })
+  expect(out.text).toBe('Switched to Meadow lamb.')
+  expect(box.skin).toBe('meadow-sheep')
+})

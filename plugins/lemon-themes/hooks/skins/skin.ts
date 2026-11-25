@@ -4,6 +4,7 @@
 import type { ThemeSetArgs } from 'claude-code'
 
 import type { Poke } from '../../types'
+import type { L } from '../i18n'
 
 export type Cheer = 'praise' | 'commit' | 'tests' | 'yay'
 
@@ -11,11 +12,13 @@ export type Skin = {
   /** The id saved in the store and used as the backdrop scene's name. */
   id: string
   /** Shown in the /skin pane. */
-  name: string
-  /** The mascot, as the band and the replies call it: 小熊, 小羊. */
-  mascot: string
+  name: L
+  /** The mascot, as the band and the replies call it: 小熊 / bear. */
+  mascot: L
   /** One line for the /skin pane. */
-  blurb: string
+  blurb: L
+  /** Words /skin <word> accepts for this skin, besides its id. */
+  aliases: string[]
   /** Colours and message styles; `base` is the fallback with colours and the scene only. */
   look: ThemeSetArgs
   base: ThemeSetArgs
@@ -23,12 +26,12 @@ export type Skin = {
   problems: string[]
   /** The whole backdrop: still = no motion and the mascot's first frame only. */
   scene: (isAsleep: boolean, poke: Poke | null, still: boolean, floaters: boolean) => string
-  alt: { awake: string; asleep: string }
+  alt: { awake: L; asleep: L }
   /** Small stickers over the person's bubbles, one picked per message. */
   userStickers: string[]
-  userStickerAlt: string
+  userStickerAlt: L
   /** A sticker on the first block of each reply. */
-  reply: { svg: string; alt: string; width: number; height: number }
+  reply: { svg: string; alt: L; width: number; height: number }
   icons: { mascot: string; think: string; token: string; agents: string; coin: string }
   juiceGlass: (percent: number | null) => string
   limitRing: (percent: number) => string
@@ -38,5 +41,5 @@ export type Skin = {
   ink: { heading: string; gauge: string; border: string; ok: string }
   /** Emoji on the pane's cards (the terminal shows these instead of icons). */
   emoji: { title: string; mascot: string; context: string; token: string; agents: string }
-  cheers: Record<Cheer, string[]>
+  cheers: Record<Cheer, { zh: string[]; en: string[] }>
 }

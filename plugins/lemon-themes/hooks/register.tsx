@@ -19,6 +19,8 @@ import {
   stillSvg,
   totalTokens,
 } from './format'
+import { WORDS, langFromEnv, pick } from './i18n'
+import type { Lang, Words } from './i18n'
 import { SKINS, skinById } from './skins/index'
 import type { Cheer, Skin } from './skins/skin'
 import { DEFAULT_OPTIONS, SWITCHES, savedOptions } from './state'
@@ -37,6 +39,7 @@ export const isBandHidden = atom({ plugin: 'lemon-themes', key: 'isBandHidden' }
 export const effort = atom({ plugin: 'lemon-themes', key: 'effort' } as const, null)
 export const isAsleep = atom({ plugin: 'lemon-themes', key: 'isAsleep' } as const, false)
 export const poke = atom({ plugin: 'lemon-themes', key: 'poke' } as const, null)
+export const lang = atom({ plugin: 'lemon-themes', key: 'lang' } as const, 'zh')
 
 
 const PRAISE = /(太好了|太棒|好棒|很棒|真棒|棒棒|好主意|好点子|完美|厉害|绝了|好看|喜欢|可爱|nice|great|awesome|perfect|love it|amazing|well done)/i
@@ -50,8 +53,14 @@ const SKIN_PANE = 'lemon-themes-skins'
 const USD_TO_CNY = 7.1
 const SCENES = new Set(SKINS.map(s => s.id))
 
-async function current($: Api): Promise<{ s: Skin; o: Options }> {
-  return { s: skinById(await read($, skin)), o: await read($, options) }
+async function current($: Api): Promise<{ s: Skin; o: Options; lg: Lang; w: Words }> {
+  const lg: Lang = (await read($, lang)) === 'en' ? 'en' : 'zh'
+  return { s: skinById(await read($, skin)), o: await read($, options), lg, w: WORDS[lg] }
+}
+
+async function useLang($: Api, next: Lang) {
+  await update($, lang, () => next)
+  await $.store.set('lang', next)
 }
 
 async function applyLook($: Api, s: Skin) {
@@ -97,10 +106,10 @@ async function play($: Api, what: Poke['what'], x?: number, y?: number) {
 }
 
 async function celebrate($: Api, why: Cheer) {
-  const { s, o } = await current($)
+  const { s, o, lg, w } = await current($)
   if (!o.cheers) return
-  const lines = s.cheers[why]
-  const line = lines[Math.floor(Math.random() * lines.length)] ?? '耶！'
+  const lines = s.cheers[why][lg]
+  const line = lines[Math.floor(Math.random() * lines.length)] ?? w.yay
   await update($, isAsleep, () => false)
   await play($, 'party')
   $.ui.toast(line)
@@ -155,9 +164,13 @@ export const register: Register = on => {
     await update($, skin, () => skinById(typeof savedSkin === 'string' ? savedSkin : SKINS[0]?.id ?? '').id)
     const savedOpts = await $.store.get('options')
     await update($, options, () => savedOptions(savedOpts))
+    // the language chosen in /skin; before any choice, the system's (LANG)
+    const savedLang = await $.store.get('lang')
+    const startLang: Lang = savedLang === 'en' || savedLang === 'zh' ? savedLang : langFromEnv(await $.env.get('LANG'))
+    await update($, lang, () => startLang)
     await applyLook($, skinById(await read($, skin)))
 
-    await $.command.register({ name: 'skin', description: '换皮肤、开关动画和特效（Lemon Themes）' })
+    await $.command.register({ name: 'skin', description: WORDS[startLang].commandHelp })
     await refresh($)
     $.clock.every(5000, () => {
       void refresh($)
@@ -178,28 +191,34 @@ export const register: Register = on => {
   // /skin opens the pane; /skin <name> switches; /skin usage, /skin nap, /skin yay
   on('command.run', { command: 'skin' }, async ($, e) => {
     const arg = (e.args ?? '').trim()
-    const { s } = await current($)
+    if (/^(en|english|英文)$/i.test(arg)) await useLang($, 'en')
+    if (/^(zh|chinese|中文)$/i.test(arg)) await useLang($, 'zh')
+    const { s, lg, w } = await current($)
+    if (/^(en|english|英文|zh|chinese|中文)$/i.test(arg)) {
+      return { text: lg === 'en' ? 'Language: English.' : '语言：中文。' }
+    }
     if (/^(usage|用量)/.test(arg)) {
       await refresh($)
       await update($, isBandHidden, () => false)
-      await $.ui.open({ id: USAGE, title: `${s.mascot}用量` })
-      return { text: '用量面板已打开。' }
+      await $.ui.open({ id: USAGE, title: w.usageTitle(pick(s.mascot, lg)) })
+      return { text: w.usageOpened }
     }
     if (/yay|撒花|庆祝/.test(arg)) {
       await celebrate($, 'yay')
-      return { text: `${s.mascot}撒花中～` }
+      return { text: w.cheering(pick(s.mascot, lg)) }
     }
     if (/nap|sleep|睡|盹/.test(arg)) {
       await update($, isAsleep, () => true)
-      return { text: `${s.mascot}睡了，点两边空白处就会醒。` }
+      return { text: w.napping(pick(s.mascot, lg)) }
     }
-    const pick = SKINS.find(k => arg !== '' && (k.id === arg || k.name.includes(arg) || k.mascot.includes(arg)))
-    if (pick !== undefined) {
-      await useSkin($, pick.id)
-      return { text: `已换成「${pick.name}」。` }
+    const a = arg.toLowerCase()
+    const chosen = SKINS.find(k => a !== '' && (k.id === a || k.aliases.some(x => a.includes(x.toLowerCase())) || k.name.zh.includes(arg)))
+    if (chosen !== undefined) {
+      await useSkin($, chosen.id)
+      return { text: w.switched(pick(chosen.name, lg)) }
     }
-    await $.ui.open({ id: SKIN_PANE, title: '皮肤' })
-    return { text: '皮肤面板已打开：选皮肤，或者关掉不想要的动画和特效。' }
+    await $.ui.open({ id: SKIN_PANE, title: w.paneTitle })
+    return { text: w.paneOpened }
   })
 
   on('tool.call', async ($, e, next) => {
@@ -268,13 +287,14 @@ export const register: Register = on => {
     const { Svg } = $.ui.resolve(e)
     const s = skinById(e.props.scene ?? '')
     const o = await read($, options)
+    const lg: Lang = (await read($, lang)) === 'en' ? 'en' : 'zh'
     const asleep = o.nap && (await read($, isAsleep))
     const p = o.cheers && o.motion ? await read($, poke) : null
     const svg = s.scene(asleep, p, !o.motion, o.floaters)
 
     // One SVG: the app plays SMIL in a single backdrop Svg (two stacked layers stayed still).
     // isInteractive: without it the app did not pass clicks on the backdrop to ui.pointer.
-    return <Svg isInteractive source={o.motion ? svg : stillSvg(svg)} alt={asleep ? s.alt.asleep : s.alt.awake} />
+    return <Svg isInteractive source={o.motion ? svg : stillSvg(svg)} alt={pick(asleep ? s.alt.asleep : s.alt.awake, lg)} />
   })
 
   // A little sticker on each of the person's bubbles.
@@ -284,7 +304,7 @@ export const register: Register = on => {
     if ((e.surface !== 'desktop' && e.surface !== 'mobile') || !isOwn) {
       return next(e)
     }
-    const { s, o } = await current($)
+    const { s, o, lg } = await current($)
     if (!o.bubbles) {
       return next(e)
     }
@@ -295,7 +315,7 @@ export const register: Register = on => {
     return (
       <Box flexDirection="column">
         <Box flexDirection="row" justifyContent="flex-end" marginBottom={-1}>
-          <Svg source={source} alt={s.userStickerAlt} width={30} height={30} />
+          <Svg source={source} alt={pick(s.userStickerAlt, lg)} width={30} height={30} />
         </Box>
         {await next(e)}
       </Box>
@@ -307,7 +327,7 @@ export const register: Register = on => {
     if ((e.surface !== 'desktop' && e.surface !== 'mobile') || !e.props.isFirstOfReply) {
       return next(e)
     }
-    const { s, o } = await current($)
+    const { s, o, lg } = await current($)
     if (!o.bubbles) {
       return next(e)
     }
@@ -316,7 +336,7 @@ export const register: Register = on => {
     return (
       <Box flexDirection="column">
         <Box flexDirection="row" marginBottom={-1}>
-          <Svg source={o.motion ? s.reply.svg : stillSvg(s.reply.svg)} alt={s.reply.alt} width={s.reply.width} height={s.reply.height} />
+          <Svg source={o.motion ? s.reply.svg : stillSvg(s.reply.svg)} alt={pick(s.reply.alt, lg)} width={s.reply.width} height={s.reply.height} />
         </Box>
         {await next(e)}
       </Box>
@@ -326,7 +346,7 @@ export const register: Register = on => {
   on('ui.render', { component: 'AbovePrompt' }, async ($, e, next) => {
     const st = await read($, snap)
     const hidden = await read($, isBandHidden)
-    const { s, o } = await current($)
+    const { s, o, lg, w } = await current($)
     if (e.props.hasSurvey || hidden || !o.band || st === null) {
       return next(e)
     }
@@ -350,42 +370,40 @@ export const register: Register = on => {
       <Box flexDirection="row" columnGap={2} rowGap={1} alignItems="center" flexWrap="wrap">
         {item(
           'model',
-          ic(s.icons.mascot, '模型', 20),
+          ic(s.icons.mascot, w.model, 20),
           <Text color={s.ink.heading} bold>
             {prettyModel(st.model)}
           </Text>,
         )}
-        {item('effort', ic(s.icons.think, '思考强度', 16), <Text>思考 {effortText(level)}</Text>)}
+        {item('effort', ic(s.icons.think, w.effort, 16), <Text>{w.effortShort(effortText(level, w))}</Text>)}
         {item(
           'ctx',
-          rich ? ic(s.juiceGlass(pct), '上下文用量', 20) : <Text color={(pct ?? 0) >= 80 ? 'danger' : s.ink.gauge}>{cells(pct)}</Text>,
-          <Text color={(pct ?? 0) >= 80 ? 'danger' : undefined}>上下文 {pct === null ? '—' : `${pct}%`}</Text>,
+          rich ? ic(s.juiceGlass(pct), w.context, 20) : <Text color={(pct ?? 0) >= 80 ? 'danger' : s.ink.gauge}>{cells(pct)}</Text>,
+          <Text color={(pct ?? 0) >= 80 ? 'danger' : undefined}>{w.contextShort(pct === null ? '—' : `${pct}%`)}</Text>,
         )}
         {item('tok', ic(s.icons.token, 'Token', 18), <Text>{short(totalTokens(t))} tok</Text>)}
         {item(
           'agents',
-          ic(s.icons.agents, '子 agent', 20),
-          <Text>
-            子 agent {calls} 次{st.running.length > 0 ? `（${st.running.length} 个在跑）` : ''}
-          </Text>,
+          ic(s.icons.agents, w.agents, 20),
+          <Text>{w.agentsShort(calls, st.running.length)}</Text>,
         )}
-        {item('usd', ic(s.icons.coin, '等价金额', 18), <Text bold>≈ {money(st.usd)}</Text>)}
+        {item('usd', ic(s.icons.coin, w.cost, 18), <Text bold>≈ {money(st.usd)}</Text>)}
         {st.limits
           .filter(l => l.kind === 'five_hour' || l.kind === 'seven_day')
           .map(l =>
             item(
               l.kind,
-              ic(s.limitRing(l.percentUsed), limitName(l.kind), 18),
+              ic(s.limitRing(l.percentUsed), limitName(l.kind, w), 18),
               <Text color={l.percentUsed >= 80 ? 'danger' : undefined}>
-                {l.kind === 'five_hour' ? '5 小时' : '每周'} {l.percentUsed}%
-                <Text dimColor> · {resetShort(l.resetsAt)}</Text>
+                {l.kind === 'five_hour' ? w.fiveHour : w.week} {l.percentUsed}%
+                <Text dimColor> · {resetShort(l.resetsAt, w)}</Text>
               </Text>,
             ),
           )}
         <Box flexDirection="row" gap={1} marginLeft={1}>
-          <Button key="open" label="详情" onPress={() => $.ui.open({ id: USAGE, title: `${s.mascot}用量` })} />
-          <Button key="skin" label="皮肤" onPress={() => $.ui.open({ id: SKIN_PANE, title: '皮肤' })} />
-          <Button key="hide" label="收起" onPress={() => update($, isBandHidden, () => true)} />
+          <Button key="open" label={w.details} onPress={() => $.ui.open({ id: USAGE, title: w.usageTitle(pick(s.mascot, lg)) })} />
+          <Button key="skin" label={w.skin} onPress={() => $.ui.open({ id: SKIN_PANE, title: w.paneTitle })} />
+          <Button key="hide" label={w.hide} onPress={() => update($, isBandHidden, () => true)} />
         </Box>
       </Box>
     )
@@ -397,11 +415,16 @@ export const register: Register = on => {
     const { Box, Text, Button } = ui
     const isRich = (e.surface === 'desktop' || e.surface === 'mobile') && 'Svg' in ui
     const now = await read($, skin)
-    const o = await read($, options)
+    const { o, lg, w } = await current($)
 
     return (
       <Box flexDirection="column" gap={1}>
-        <Text weight="semibold">选皮肤</Text>
+        <Box flexDirection="row" alignItems="center" gap={1}>
+          <Text weight="semibold">{w.language}</Text>
+          {lg === 'zh' ? <Text dimColor>中文 ✓</Text> : <Button key="lang-zh" label="中文" onPress={() => useLang($, 'zh')} />}
+          {lg === 'en' ? <Text dimColor>English ✓</Text> : <Button key="lang-en" label="English" onPress={() => useLang($, 'en')} />}
+        </Box>
+        <Text weight="semibold">{w.pickSkin}</Text>
         {SKINS.map(k => (
           <Box
             key={k.id}
@@ -413,47 +436,47 @@ export const register: Register = on => {
             borderColor={k.id === now ? k.ink.border : undefined}
             backgroundColor={isRich && k.id === now ? 'surface-1' : undefined}
           >
-            {isRich ? <ui.Svg source={stillSvg(k.badge)} alt={k.name} width={48} height={48} /> : null}
+            {isRich ? <ui.Svg source={stillSvg(k.badge)} alt={pick(k.name, lg)} width={48} height={48} /> : null}
             <Box flexDirection="column" flexGrow={1}>
               <Text bold color={k.ink.heading}>
-                {k.name}
+                {pick(k.name, lg)}
               </Text>
               <Text dimColor size="footnote">
-                {k.blurb}
+                {pick(k.blurb, lg)}
               </Text>
             </Box>
             {k.id === now ? (
-              <Text dimColor>使用中</Text>
+              <Text dimColor>{w.inUse}</Text>
             ) : (
-              <Button key={`use-${k.id}`} label="换成这个" onPress={() => useSkin($, k.id)} />
+              <Button key={`use-${k.id}`} label={w.useThis} onPress={() => useSkin($, k.id)} />
             )}
           </Box>
         ))}
 
-        <Text weight="semibold">开关</Text>
+        <Text weight="semibold">{w.switches}</Text>
         {SWITCHES.map(sw => (
           <Box key={sw.key} flexDirection="row" alignItems="center" justifyContent="space-between" gap={1}>
             <Box flexDirection="column" flexShrink={1}>
-              <Text>{sw.label}</Text>
+              <Text>{pick(sw.label, lg)}</Text>
               <Text dimColor size="footnote">
-                {sw.off}
+                {pick(sw.off, lg)}
               </Text>
             </Box>
-            <Button key={`sw-${sw.key}`} label={o[sw.key] ? '开 · 点一下关掉' : '关 · 点一下打开'} onPress={() => setOption($, sw.key, !o[sw.key])} />
+            <Button key={`sw-${sw.key}`} label={o[sw.key] ? w.on : w.off} onPress={() => setOption($, sw.key, !o[sw.key])} />
           </Box>
         ))}
         <Box flexDirection="row" gap={1}>
-          <Button key="all-on" label="全部打开" onPress={() => SWITCHES.reduce((p, sw) => p.then(() => setOption($, sw.key, true)), Promise.resolve())} />
+          <Button key="all-on" label={w.allOn} onPress={() => SWITCHES.reduce((p, sw) => p.then(() => setOption($, sw.key, true)), Promise.resolve())} />
           <Button
             key="light"
-            label="省电模式"
+            label={w.saver}
             onPress={() =>
               ['motion', 'floaters', 'cheers'].reduce((p, k) => p.then(() => setOption($, k as keyof Options, false)), Promise.resolve())
             }
           />
         </Box>
         <Text dimColor size="footnote">
-          设置会记住，下次打开 App 还在。命令：/skin 小羊、/skin 小熊、/skin usage、/skin nap。
+          {w.footer}
         </Text>
       </Box>
     )
@@ -464,13 +487,13 @@ export const register: Register = on => {
     const t = await read($, tokens)
     const calls = await read($, agentCalls)
     const level = await read($, effort)
-    const { s } = await current($)
+    const { s, lg, w } = await current($)
     const ui = $.ui.resolve(e)
     const { Box, Text, Progress } = ui
     const isRich = e.surface === 'desktop' || e.surface === 'mobile'
 
     if (st === null) {
-      return <Text dimColor>{s.mascot}正在数数…（等第一次回复后就有数字）</Text>
+      return <Text dimColor>{w.counting(pick(s.mascot, lg))}</Text>
     }
 
     const card = (title: string, body: RenderChildren) => (
@@ -495,60 +518,60 @@ export const register: Register = on => {
       <Box flexDirection="column" gap={1}>
         {isRich && 'Svg' in ui ? (
           <Box flexDirection="row" alignItems="center" gap={1}>
-            <ui.Svg source={s.badge} alt={s.name} isInteractive />
+            <ui.Svg source={s.badge} alt={pick(s.name, lg)} isInteractive />
             <Box flexDirection="column">
               <Text size="heading" weight="bold" color={s.ink.heading}>
-                {s.name}
+                {pick(s.name, lg)}
               </Text>
-              <Text dimColor>本 session 的用量小账本</Text>
+              <Text dimColor>{w.ledger}</Text>
             </Box>
           </Box>
         ) : (
           <Text bold>
-            {s.emoji.title} {s.name} 用量
+            {s.emoji.title} {pick(s.name, lg)} {w.usageWord}
           </Text>
         )}
 
         {card(
-          `${s.emoji.mascot} 模型`,
+          `${s.emoji.mascot} ${w.cardModel}`,
           <Box flexDirection="column">
             <Text size="title" weight="bold">
               {prettyModel(st.model)}
             </Text>
-            {row('思考强度', level === null ? '默认（还没读数）' : `${effortText(level)}（${level}）`)}
+            {row(w.effort, level === null ? w.effortNone : `${effortText(level, w)} (${level})`)}
           </Box>,
         )}
 
         {card(
-          `${s.emoji.context} 上下文`,
+          `${s.emoji.context} ${w.cardContext}`,
           <Box flexDirection="column" gap={1}>
             <Progress
-              label="已用"
+              label={w.used}
               value={st.contextPercent ?? 0}
               max={100}
-              valueText={st.contextPercent === null ? '还没读数' : `${st.contextPercent}%`}
+              valueText={st.contextPercent === null ? w.noReading : `${st.contextPercent}%`}
               color={(st.contextPercent ?? 0) >= 80 ? 'danger' : s.ink.gauge}
             />
-            {row('已用 / 窗口', `${st.contextTokens === null ? '—' : short(st.contextTokens)} / ${short(st.contextWindow)} tokens`)}
+            {row(w.usedOfWindow, `${st.contextTokens === null ? '—' : short(st.contextTokens)} / ${short(st.contextWindow)} tokens`)}
           </Box>,
         )}
 
         {card(
-          `${s.emoji.token} Token（主对话 + 子 agent，本次加载起累计）`,
+          `${s.emoji.token} ${w.cardTokens}`,
           <Box flexDirection="column">
-            {row('合计', short(totalTokens(t)))}
-            {row('输入', short(t.input))}
-            {row('输出', short(t.output))}
-            {row('缓存读', short(t.cacheRead))}
-            {row('缓存写', short(t.cacheWrite))}
+            {row(w.total, short(totalTokens(t)))}
+            {row(w.input, short(t.input))}
+            {row(w.output, short(t.output))}
+            {row(w.cacheRead, short(t.cacheRead))}
+            {row(w.cacheWrite, short(t.cacheWrite))}
           </Box>,
         )}
 
         {card(
-          `${s.emoji.agents} 子 agent`,
+          `${s.emoji.agents} ${w.cardAgents}`,
           <Box flexDirection="column" gap={1}>
-            {row('本 session 派出', `${calls} 次`)}
-            {row('正在跑', `${st.running.length} 个`)}
+            {row(w.sent, w.times(calls))}
+            {row(w.running, w.count(st.running.length))}
             {st.running.slice(0, 6).map(a => (
               <Box key={a.id} flexDirection="row" justifyContent="space-between">
                 <Text wrap="truncate-end">• {a.label}</Text>
@@ -561,26 +584,26 @@ export const register: Register = on => {
         )}
 
         {card(
-          '💰 等价金额（按 API 定价折算）',
+          w.cardCost,
           <Box flexDirection="column" gap={1}>
             <Text size="title" weight="bold">
               ≈ {money(st.usd)}
               {cny === null ? '' : `  ≈ ¥${cny.toFixed(2)}`}
             </Text>
             <Text dimColor size="footnote">
-              估算值，不是账单。订阅额度内不按美元扣钱；人民币按 1 美元≈{USD_TO_CNY} 元粗算。
-              {st.hasUnknownPrice ? ' 含未知定价的模型，按其他模型价格估。' : ''}
+              {w.costNote(USD_TO_CNY)}
+              {st.hasUnknownPrice ? w.unknownPrice : ''}
             </Text>
           </Box>,
         )}
 
         {st.limits.length > 0 &&
           card(
-            '⏳ 订阅额度',
+            w.cardLimits,
             <Box flexDirection="column" gap={1}>
               {st.limits.map(l => (
                 <Progress
-                  label={`${limitName(l.kind)} ${resetText(l.resetsAt)}`}
+                  label={`${limitName(l.kind, w)} ${resetText(l.resetsAt, w)}`}
                   value={Math.min(100, l.percentUsed)}
                   max={100}
                   valueText={`${l.percentUsed}%`}
