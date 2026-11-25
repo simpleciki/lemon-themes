@@ -1,26 +1,124 @@
 {
   "theme": "lemon-bear",
   "sheets": {
-    "props": { "file": "props-D-storybook.png", "alpha_cut": 220 },
-    "parts": { "file": "parts-D-storybook.png", "alpha_cut": 220 },
-    "idle":  { "file": "seq-idle.png", "alpha_cut": 200 },
-    "sleep": { "file": "seq-sleep.png", "alpha_cut": 200 }
+    "props": {
+      "file": "props-D-storybook.png",
+      "alpha_cut": 220
+    },
+    "parts": {
+      "file": "parts-D-storybook.png",
+      "alpha_cut": 220
+    },
+    "idle": {
+      "file": "seq-idle.png",
+      "alpha_cut": 200
+    },
+    "sleep": {
+      "file": "seq-sleep.png",
+      "alpha_cut": 200
+    }
   },
   "sprites": {
-    "head":     { "sheet": "parts", "item": 0,  "scale": 0.55, "colors": 16, "speck": 3, "trim_chin": true },
-    "lemon":    { "sheet": "props", "item": 0,  "scale": 0.40, "colors": 10, "speck": 3 },
-    "slice":    { "sheet": "props", "item": 1,  "scale": 0.38, "colors": 6,  "speck": 4 },
-    "leaf":     { "sheet": "props", "item": 3,  "scale": 0.40, "colors": 6,  "speck": 3 },
-    "daisy":    { "sheet": "props", "item": 4,  "scale": 0.37, "colors": 8,  "speck": 3 },
-    "bee":      { "sheet": "props", "item": 5,  "scale": 0.42, "colors": 8,  "speck": 4 },
-    "wings":    { "sheet": "props", "item": 6,  "scale": 0.32, "colors": 6,  "speck": 3 },
-    "jar":      { "sheet": "props", "item": 7,  "scale": 0.44, "colors": 8,  "speck": 4 },
-    "lemonade": { "sheet": "props", "item": 8,  "scale": 0.43, "colors": 8,  "speck": 4 },
-    "sparkle":  { "sheet": "props", "item": 9,  "scale": 0.38, "colors": 6,  "speck": 3 },
-    "heart":    { "sheet": "props", "item": 10, "scale": 0.37, "colors": 6,  "speck": 3 }
+    "head": {
+      "sheet": "parts",
+      "item": 0,
+      "scale": 0.55,
+      "colors": 16,
+      "speck": 3,
+      "trim_chin": true
+    },
+    "lemon": {
+      "sheet": "props",
+      "item": 0,
+      "scale": 0.4,
+      "colors": 10,
+      "speck": 3
+    },
+    "slice": {
+      "sheet": "props",
+      "item": 1,
+      "scale": 0.38,
+      "colors": 6,
+      "speck": 4
+    },
+    "leaf": {
+      "sheet": "props",
+      "item": 3,
+      "scale": 0.4,
+      "colors": 6,
+      "speck": 3
+    },
+    "daisy": {
+      "sheet": "props",
+      "item": 4,
+      "scale": 0.37,
+      "colors": 8,
+      "speck": 3
+    },
+    "bee": {
+      "sheet": "props",
+      "item": 5,
+      "scale": 0.42,
+      "colors": 8,
+      "speck": 4
+    },
+    "wings": {
+      "sheet": "props",
+      "item": 6,
+      "scale": 0.32,
+      "colors": 6,
+      "speck": 3
+    },
+    "jar": {
+      "sheet": "props",
+      "item": 7,
+      "scale": 0.44,
+      "colors": 8,
+      "speck": 4
+    },
+    "lemonade": {
+      "sheet": "props",
+      "item": 8,
+      "scale": 0.43,
+      "colors": 8,
+      "speck": 4
+    },
+    "sparkle": {
+      "sheet": "props",
+      "item": 9,
+      "scale": 0.38,
+      "colors": 6,
+      "speck": 3
+    },
+    "heart": {
+      "sheet": "props",
+      "item": 10,
+      "scale": 0.37,
+      "colors": 6,
+      "speck": 3
+    }
   },
   "sequences": {
-    "idle":  { "sheet": "idle",  "keep": [0, 2], "scale": 0.42, "colors": 14, "speck": 4 },
-    "sleep": { "sheet": "sleep", "keep": [0, 1], "scale": 0.42, "colors": 14, "speck": 4 }
-  }
+    "idle": {
+      "sheet": "idle",
+      "keep": [
+        0,
+        2
+      ],
+      "scale": 0.42,
+      "colors": 14,
+      "speck": 4
+    },
+    "sleep": {
+      "sheet": "sleep",
+      "keep": [
+        0,
+        1
+      ],
+      "scale": 0.42,
+      "colors": 14,
+      "speck": 4
+    }
+  },
+  "out": "plugins/lemon-themes/hooks/skins/lemon-bear"
 }

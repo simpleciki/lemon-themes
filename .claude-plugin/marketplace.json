@@ -1,12 +1,19 @@
 {
   "name": "lemon-themes",
-  "owner": { "name": "Ciki" },
-  "description": "Storybook sticker themes for the Claude desktop app.",
+  "owner": {
+    "name": "Ciki"
+  },
+  "description": "Storybook sticker skins for the Claude desktop app: switch skins and turn off animation or effects from /skin.",
   "plugins": [
+    {
+      "name": "lemon-themes",
+      "source": "./plugins/lemon-themes",
+      "description": "All the storybook skins in one plugin (lemon bear, meadow lamb): switch skins and turn off animation or effects from /skin; usage band and pane."
+    },
     {
       "name": "lemon-bear",
       "source": "./plugins/lemon-bear",
-      "description": "Lemon & honey-bear theme: floating stickers, an animated bear, a usage band and pane."
+      "description": "The original single-skin lemon-bear plugin, kept for people who installed it. New installs: use lemon-themes, which includes this skin."
     }
   ]
 }

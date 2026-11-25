@@ -5,8 +5,10 @@ description: Make a new hand-drawn theme for the Claude desktop app in this repo
 
 # Make a theme
 
-A theme is a plugin under `plugins/<theme>/` plus its source drawings under `art-src/<theme>/`.
-`lemon-bear` is the worked example; copy it and change the art and words.
+A theme (a "skin") is a folder `plugins/lemon-themes/hooks/skins/<theme>/` inside the one
+`lemon-themes` plugin, plus its source drawings under `art-src/<theme>/`. `meadow-sheep` is the
+newest worked example; copy its folder and change the art and words. The /skin pane lists every
+skin in `skins/index.ts`.
 
 Read `docs/LESSONS.md` first: it lists what the app will and will not play.
 
@@ -45,15 +47,22 @@ python tools/build_theme.py <theme>
 It prints each sprite's size in characters. Keep the whole backdrop under 131,072: lower `colors`
 or `scale` on the heavy items, keep fewer frames, and drop items the theme no longer draws.
 
-## 4. Build the plugin
+## 4. Add the skin
 
-Copy `plugins/lemon-bear/` and change, in `hooks/art.ts`: the floating sticker lists (`LEFT`,
-`RIGHT`), the mascot timeline (`FLIP`), the pop and burst stickers; in `hooks/register.tsx`: the
-colours (`makeColors`), the bubble style, the cheer lines and the band's words. Animate only with SMIL.
+Set `"out": "plugins/lemon-themes/hooks/skins/<theme>"` in `theme-build.json` before you build.
+Copy `skins/meadow-sheep/` and change, in `art.ts`: the floating and ground sticker lists, the mascot
+timeline (`FLIP`), the pop and burst stickers; in `skin.ts`: the colours (`makeColors`), the bubble
+style, the cheer lines, the band's icons and words. Add it to `skins/index.ts`. Animate only with
+SMIL: the "motion off" switch works by removing every `<animate…/>`, so nothing may depend on one
+to become visible except the one-shot effects. Keep `worldLayer(floaters)` honouring its flag.
+
+Faces of soft, shaded mascots: trace the frames coarsely and add `detail` to the sequence in
+`theme-build.json` so the face is traced again finely on top (see docs/LESSONS.md).
 
 ## 5. Check before showing
 
-- Type-check the plugin and keep every state's backdrop under the limit.
+- Run `claude plugin test plugins/lemon-themes` with the engine the app runs (docs/LESSONS.md says
+  where it is): the tests switch skins, turn motion off and check every backdrop's size.
 - Open the backdrop in a browser as an `<img>` and watch it for a few seconds: things must move.
 - Then load it in the app and ask the person to look. The app may hold still what a browser plays.
 
