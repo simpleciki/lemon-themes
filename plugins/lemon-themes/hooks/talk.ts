@@ -100,14 +100,15 @@ function wrap(text: string, px: number, max: number): string[] {
 }
 
 /** The speech bubble above the mascot, its tail toward the head; grows to the left. */
-export function talkLayer(text: string): string {
+export function talkLayer(text: string, headTop = 662): string {
   const px = 21
   const lines = wrap(text, px, 230)
   const w = Math.round(Math.max(...lines.map(l => width(l, px))) + 36)
   const h = 20 + lines.length * 28
   const right = 262
   const x = right - w
-  const y = 632 - h
+  // the tail's tip (y + h + 26) lands just above the head
+  const y = headTop - 30 - h
   const texts = lines
     .map((l, i) => `<text x="${x + w / 2}" y="${y + 33 + i * 28}" text-anchor="middle" font-family="sans-serif" font-size="${px}" font-weight="600" fill="#4a3a28">${esc(l)}</text>`)
     .join('')

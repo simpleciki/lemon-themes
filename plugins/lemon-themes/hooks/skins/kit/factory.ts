@@ -444,6 +444,7 @@ export function makeSkin(spec: SkinSpec): Skin {
     badge: art.BADGE,
     ink: { heading: c.heading, gauge: c.accent, border: c.user[1], ok: '#4f9a5a' },
     emoji: spec.emoji,
+    headTop: (spec.mascotAt?.y ?? 930) - spec.mascotHeight,
     garden: () => ({ ...spec.garden, size: art.sizeOf, def: art.defOf }),
     cheers: spec.cheers,
   }

@@ -102,6 +102,7 @@ export const POND_DUCK: Skin = {
   badge: BADGE,
   ink: { heading: '#3a86ad', gauge: '#3f9ac4', border: '#9fd3ec', ok: '#4f9a5a' },
   emoji: { title: '🌼🐥', mascot: '🐥', context: '💧', token: '🪷', agents: '🪰' },
+  headTop: 740,
   garden: variant =>
     variant === 'dusk'
       ? { flower: 'bud', bush: 'lantern', landmark: 'nReeds', bloom: 'nSparkle', size: sizeOf, def: defOf, ink: '#6b5fa0' }

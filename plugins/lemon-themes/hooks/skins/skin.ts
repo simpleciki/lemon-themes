@@ -47,6 +47,8 @@ export type Skin = {
   ink: { heading: string; gauge: string; border: string; ok: string }
   /** Emoji on the pane's cards (the terminal shows these instead of icons). */
   emoji: { title: string; mascot: string; context: string; token: string; agents: string }
+  /** Where the top of the mascot's head is, in the right strip's units (400 x 1000): bubbles stand on it. */
+  headTop?: number
   /** What the garden plants on this skin's bank, for a look (see variants). */
   garden: (variant?: string) => GardenKit
   cheers: Record<Cheer, { zh: string[]; en: string[] }>
