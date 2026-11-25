@@ -51,9 +51,10 @@ const base: ThemeSetArgs = { colors: theme, backdrop: { scene: 'lemon-bear' } }
 
 export const LEMON_BEAR: Skin = {
   id: 'lemon-bear',
-  name: '柠檬小熊',
-  mascot: '小熊',
-  blurb: '彩铅绘本：抱着柠檬的蜂蜜小熊、飘浮的柠檬和小蜜蜂',
+  name: { zh: '柠檬小熊', en: 'Lemon bear' },
+  mascot: { zh: '小熊', en: 'bear' },
+  blurb: { zh: '彩铅绘本：抱着柠檬的蜂蜜小熊、飘浮的柠檬和小蜜蜂', en: 'Coloured pencil: a honey bear hugging a lemon, with floating lemons and bees' },
+  aliases: ['小熊', '柠檬', 'bear', 'lemon'],
   base,
   look: {
     ...base,
@@ -79,10 +80,10 @@ export const LEMON_BEAR: Skin = {
   },
   problems,
   scene,
-  alt: { awake: '漂浮的柠檬贴纸和抱着柠檬的小熊', asleep: '小熊趴着睡着了' },
+  alt: { awake: { zh: '漂浮的柠檬贴纸和抱着柠檬的小熊', en: 'Floating lemon stickers and a bear hugging a lemon' }, asleep: { zh: '小熊趴着睡着了', en: 'The bear is asleep' } },
   userStickers: [STICKERS.lemon, STICKERS.slice, STICKERS.daisy, STICKERS.heart],
-  userStickerAlt: '柠檬小贴纸',
-  reply: { svg: STICKERS.bee, alt: '小蜜蜂贴纸', width: 32, height: 34 },
+  userStickerAlt: { zh: '柠檬小贴纸', en: 'Lemon sticker' },
+  reply: { svg: STICKERS.bee, alt: { zh: '小蜜蜂贴纸', en: 'Bee sticker' }, width: 32, height: 34 },
   icons: { mascot: ICONS.bear, think: ICONS.think, token: ICONS.honey, agents: ICONS.bee, coin: ICONS.coin },
   juiceGlass,
   limitRing,
@@ -90,9 +91,9 @@ export const LEMON_BEAR: Skin = {
   ink: { heading: '#b9781a', gauge: '#d99a00', border: '#e6bf4a', ok: '#6f9e4c' },
   emoji: { title: '🍋🐻', mascot: '🐻', context: '🍋', token: '🍯', agents: '🐝' },
   cheers: {
-    praise: ['小熊收到夸夸啦，开心转圈！', '柠檬汁加满，继续冲！', '这个点子闪闪发光～'],
-    commit: ['提交成功！小熊给你盖了个章 🍋', '又一块砖稳稳放好了！'],
-    tests: ['测试全绿，小熊跳起来了！', '全部通过，奖励一片柠檬～'],
-    yay: ['耶！小熊为你撒花～', '今天也很棒！'],
+    praise: { zh: ['小熊收到夸夸啦，开心转圈！', '柠檬汁加满，继续冲！', '这个点子闪闪发光～'], en: ['The bear got a compliment and spins with joy!', 'Lemonade topped up, keep going!', 'That idea sparkles~'] },
+    commit: { zh: ['提交成功！小熊给你盖了个章 🍋', '又一块砖稳稳放好了！'], en: ['Committed! The bear stamps it for you 🍋', 'Another brick, firmly in place!'] },
+    tests: { zh: ['测试全绿，小熊跳起来了！', '全部通过，奖励一片柠檬～'], en: ['All green, the bear jumps for joy!', 'Every test passes: have a lemon slice~'] },
+    yay: { zh: ['耶！小熊为你撒花～', '今天也很棒！'], en: ['Yay! The bear throws confetti for you~', 'Great work today!'] },
   },
 }

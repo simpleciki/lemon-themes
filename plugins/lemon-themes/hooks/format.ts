@@ -1,6 +1,7 @@
 // Plain text helpers for the usage band and pane. No JSX here: JSX outside a hook fails in the app.
 
 import type { Tokens } from '../types'
+import type { Words } from './i18n'
 
 export function prettyModel(id: string): string {
   const m = /claude-([a-z]+)-(\d+)(?:-(\d+))?/i.exec(id)
@@ -12,10 +13,9 @@ export function prettyModel(id: string): string {
   return m[3] !== undefined && m[3].length <= 2 ? `${name} ${m[2]}.${m[3]}` : `${name} ${m[2]}`
 }
 
-const EFFORT_NAMES: Record<string, string> = { low: '低', medium: '中', high: '高', xhigh: '很高', max: '最高' }
-export function effortText(v: string | null): string {
-  if (v === null) return '默认'
-  return EFFORT_NAMES[v] ?? v
+export function effortText(v: string | null, w: Words): string {
+  if (v === null) return w.effortNames.default ?? ''
+  return w.effortNames[v] ?? v
 }
 
 export function short(n: number): string {
@@ -29,30 +29,26 @@ export function money(usd: number | null): string {
   return usd < 10 ? `$${usd.toFixed(2)}` : `$${usd.toFixed(1)}`
 }
 
-export function limitName(kind: string): string {
-  if (kind === 'five_hour') return '5 小时额度'
-  if (kind === 'seven_day') return '7 天额度'
-  if (kind === 'spend_limit') return '花费上限'
-  return kind
+export function limitName(kind: string, w: Words): string {
+  return w.limitNames[kind] ?? kind
 }
 
-export function resetText(iso: string | null): string {
+export function resetText(iso: string | null, w: Words): string {
   if (iso === null) return ''
   const d = new Date(iso)
   if (Number.isNaN(d.getTime())) return ''
   const p = (n: number) => String(n).padStart(2, '0')
-  return `${d.getMonth() + 1}/${d.getDate()} ${p(d.getHours())}:${p(d.getMinutes())} 重置`
+  return w.reset(`${d.getMonth() + 1}/${d.getDate()} ${p(d.getHours())}:${p(d.getMinutes())}`)
 }
 
-const WEEKDAYS = ['周日', '周一', '周二', '周三', '周四', '周五', '周六']
-export function resetShort(iso: string | null): string {
+export function resetShort(iso: string | null, w: Words): string {
   if (iso === null) return ''
   const d = new Date(iso)
   if (Number.isNaN(d.getTime())) return ''
   const p = (n: number) => String(n).padStart(2, '0')
   const hm = `${p(d.getHours())}:${p(d.getMinutes())}`
   const sameDay = d.toDateString() === new Date().toDateString()
-  return sameDay ? `${hm} 重置` : `${WEEKDAYS[d.getDay()]} ${hm} 重置`
+  return w.reset(sameDay ? hm : `${w.weekdays[d.getDay()] ?? ''} ${hm}`)
 }
 
 export const totalTokens = (t: Tokens) => t.input + t.output + t.cacheRead + t.cacheWrite

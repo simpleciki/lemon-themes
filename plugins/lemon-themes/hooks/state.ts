@@ -1,18 +1,19 @@
 // The plugin's values: what the session draws from, and what /skin keeps between sessions.
 
 import type { Options } from '../types'
+import type { L } from './i18n'
 
 /** Everything on, as a new install starts. */
 export const DEFAULT_OPTIONS: Options = { motion: true, floaters: true, bubbles: true, band: true, cheers: true, nap: true }
 
 /** The switches in the /skin pane, in order, with what each one turns off. */
-export const SWITCHES: { key: keyof Options; label: string; off: string }[] = [
-  { key: 'motion', label: '背景动画', off: '关掉后背景静止，适合性能一般的电脑' },
-  { key: 'floaters', label: '飘浮贴纸', off: '关掉后两边只留背景和吉祥物' },
-  { key: 'bubbles', label: '气泡上的小贴纸', off: '关掉后你的消息和回复不再贴小贴纸' },
-  { key: 'band', label: '输入框上方的用量条', off: '关掉后用量只在 /skin usage 里看' },
-  { key: 'cheers', label: '庆祝和点击特效', off: '关掉后提交、测试通过和点击都不放特效' },
-  { key: 'nap', label: '吉祥物打盹', off: '关掉后吉祥物一直醒着' },
+export const SWITCHES: { key: keyof Options; label: L; off: L }[] = [
+  { key: 'motion', label: { zh: '背景动画', en: 'Backdrop motion' }, off: { zh: '关掉后背景静止，适合性能一般的电脑', en: 'Off: the backdrop holds still, for slower computers' } },
+  { key: 'floaters', label: { zh: '飘浮贴纸', en: 'Floating stickers' }, off: { zh: '关掉后两边只留背景和吉祥物', en: 'Off: only the backdrop and the mascot in the margins' } },
+  { key: 'bubbles', label: { zh: '气泡上的小贴纸', en: 'Stickers on messages' }, off: { zh: '关掉后你的消息和回复不再贴小贴纸', en: 'Off: no stickers on your messages or the replies' } },
+  { key: 'band', label: { zh: '输入框上方的用量条', en: 'Usage band above the prompt' }, off: { zh: '关掉后用量只在 /skin usage 里看', en: 'Off: see usage with /skin usage only' } },
+  { key: 'cheers', label: { zh: '庆祝和点击特效', en: 'Celebrations and click effects' }, off: { zh: '关掉后提交、测试通过和点击都不放特效', en: 'Off: no effects for commits, passing tests or clicks' } },
+  { key: 'nap', label: { zh: '吉祥物打盹', en: "The mascot's nap" }, off: { zh: '关掉后吉祥物一直醒着', en: 'Off: the mascot stays awake' } },
 ]
 
 /** Reads saved options, keeping a default for any switch an older version did not save. */

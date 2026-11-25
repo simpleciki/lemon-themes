@@ -51,6 +51,9 @@ declare module 'claude-code' {
       effort: string | null
       isAsleep: boolean
       poke: Poke | null
+      lang: 'zh' | 'en'
+      pin: string
+      look: string
     }
   }
 }
